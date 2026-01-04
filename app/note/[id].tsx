@@ -102,26 +102,55 @@ export default function NoteDetailScreen() {
       let filename = "recording.m4a";
       
       if (recording.audioUri) {
-        // Import FileSystem dynamically to avoid issues on web
+        console.log("[Transcribe] Audio URI:", recording.audioUri);
+        
+        // Check if running on web - FileSystem is not available on web
+        if (Platform.OS === "web") {
+          console.log("[Transcribe] Running on web - FileSystem not available");
+          // On web, we need to handle this differently
+          // For now, show a message that web transcription requires a different approach
+          throw new Error("Web版ではローカルファイルの文字起こしはサポートされていません。実機（iOS/Android）でお試しください。");
+        }
+        
+        // Import FileSystem dynamically for native platforms
         const FileSystem = await import("expo-file-system/legacy");
         
         if (recording.audioUri.startsWith("file://") || !recording.audioUri.startsWith("http")) {
+          console.log("[Transcribe] Reading local file as base64...");
+          
+          // Check if file exists
+          const fileInfo = await FileSystem.getInfoAsync(recording.audioUri);
+          console.log("[Transcribe] File info:", fileInfo);
+          
+          if (!fileInfo.exists) {
+            throw new Error("音声ファイルが見つかりません: " + recording.audioUri);
+          }
+          
           // Read local file as base64
           const base64Data = await FileSystem.readAsStringAsync(recording.audioUri, {
             encoding: FileSystem.EncodingType.Base64,
           });
+          
+          console.log("[Transcribe] Base64 data length:", base64Data.length);
           audioBase64 = base64Data;
           filename = recording.audioUri.split("/").pop() || "recording.m4a";
         }
       }
 
+      if (!audioBase64) {
+        throw new Error("音声データの読み込みに失敗しました");
+      }
+
+      console.log("[Transcribe] Sending to API with base64 length:", audioBase64.length);
+      
       const result = await transcribeMutation.mutateAsync({
-        audioUrl: recording.audioUri,
         audioBase64,
         filename,
         languageCode: "ja",
         diarize: true,
       });
+      
+      console.log("[Transcribe] Result:", result);
       
       if (result.text) {
         setTranscript(recording.id, {
@@ -133,6 +162,14 @@ export default function NoteDetailScreen() {
       }
     } catch (error) {
       console.error("Transcription error:", error);
+      const errorMessage = error instanceof Error ? error.message : "文字起こしに失敗しました";
+      // Show error to user via alert or state
+      if (Platform.OS !== "web") {
+        const { Alert } = await import("react-native");
+        Alert.alert("エラー", errorMessage);
+      } else {
+        alert(errorMessage);
+      }
       updateRecording(recording.id, { status: "saved" });
     } finally {
       setIsProcessing(false);

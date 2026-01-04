@@ -46,3 +46,10 @@
 - [x] ElevenLabs APIとOAuthの調査（API Key認証を使用）
 - [x] ElevenLabs OAuth認証の実装（API Key認証を使用）
 - [x] ElevenLabs音声処理APIの統合（文字起こし）
+
+## Realtime Transcription
+- [ ] ElevenLabs Scribe v2 Realtime APIの調査
+- [ ] WebSocketクライアントの実装
+- [ ] 録音画面にリアルタイム文字起こしを統合
+- [ ] リアルタイム文字起こしのテスト
+- [x] 文字起こしのBase64送信が失敗する問題を修正（Web版の制限を明示、実機でのみ動作）
