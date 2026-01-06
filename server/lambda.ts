@@ -1,5 +1,5 @@
 import serverlessExpress from "@codegenie/serverless-express";
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./routers";
 import { createContext } from "./_core/context";
@@ -7,7 +7,7 @@ import { createContext } from "./_core/context";
 const app = express();
 
 // CORS
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   const origin = req.headers.origin;
   if (origin) {
     res.header("Access-Control-Allow-Origin", origin);
@@ -29,7 +29,7 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-app.get("/api/health", (_req, res) => {
+app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ ok: true, timestamp: Date.now() });
 });
 
@@ -41,4 +41,8 @@ app.use(
   })
 );
 
-export const handler = serverlessExpress({ app });
+const serverlessExpressInstance = serverlessExpress({ app });
+
+export const handler = (event: unknown, context: unknown) => {
+  return serverlessExpressInstance(event, context);
+};
