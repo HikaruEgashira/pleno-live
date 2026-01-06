@@ -60,3 +60,10 @@ Thumbs.db
 *.tgz
 *.tar.gz
 .cache/
+
+# Terraform
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/terraform.tfvars
+infra/.terraform.lock.hcl
