@@ -98,14 +98,7 @@ resource "aws_lambda_function" "api" {
 resource "aws_apigatewayv2_api" "api" {
   name          = local.function_name
   protocol_type = "HTTP"
-
-  cors_configuration {
-    allow_origins     = ["*"]
-    allow_methods     = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allow_headers     = ["Content-Type", "Authorization", "X-Requested-With"]
-    allow_credentials = false
-    max_age           = 300
-  }
+  # CORS is handled by Lambda to support credentials
 }
 
 resource "aws_apigatewayv2_stage" "api" {

@@ -19,7 +19,7 @@ aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS 
 # Build Docker image
 echo "Building Docker image..."
 cd "$(dirname "$0")/.."
-docker build --platform linux/amd64 -t ${FUNCTION_NAME} .
+docker build --platform linux/amd64 -t ${FUNCTION_NAME} --load .
 
 # Tag and push
 echo "Pushing to ECR..."

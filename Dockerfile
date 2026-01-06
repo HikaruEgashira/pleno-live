@@ -9,8 +9,10 @@ COPY package.json pnpm-lock.yaml ./
 RUN npm install -g pnpm && \
     pnpm install --frozen-lockfile --prod
 
-# Copy server code
+# Copy server code and dependencies
 COPY server ./server
+COPY shared ./shared
+COPY drizzle ./drizzle
 COPY tsconfig.json ./
 
 # Install dev dependencies for build
