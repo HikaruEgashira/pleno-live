@@ -356,7 +356,7 @@ const handleSummarize = async () => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => router.replace("/")}
             style={[styles.backButton, { backgroundColor: colors.surface }]}
           >
             <IconSymbol name="arrow.left" size={20} color={colors.foreground} />
