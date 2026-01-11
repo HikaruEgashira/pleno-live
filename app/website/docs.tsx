@@ -686,6 +686,14 @@ const Footer = () => (
             ホーム
           </a>
           <a
+            href="https://natbee.pages.dev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            運営会社
+          </a>
+          <a
             href="https://github.com/HikaruEgashira/pleno-transcribe"
             target="_blank"
             rel="noopener noreferrer"

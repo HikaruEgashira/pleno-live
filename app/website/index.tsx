@@ -478,7 +478,7 @@ export default function VoiceMemoLanding() {
                   rel="noopener noreferrer"
                   className="hover:text-foreground transition-colors"
                 >
-                  About
+                  運営会社
                 </a>
                 <a
                   href={`${GITHUB_URL}/releases`}
