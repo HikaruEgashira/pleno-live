@@ -227,12 +227,18 @@ export default function VoiceMemoLanding() {
               <a href="#features" className="text-muted hover:text-foreground transition-colors">
                 Features
               </a>
-              <a href="#pricing" className="text-muted hover:text-foreground transition-colors">
-                Pricing
+              <a href="/website/docs" className="text-muted hover:text-foreground transition-colors">
+                Docs
               </a>
-              <Button variant="outline" size="default">
-                Download App
-              </Button>
+              <a
+                href="https://github.com/HikaruEgashira/pleno-transcribe/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" size="default">
+                  Download App
+                </Button>
+              </a>
             </div>
           </nav>
         </header>
@@ -415,9 +421,23 @@ export default function VoiceMemoLanding() {
                 Pleno Transcribe
               </span>
             </div>
-            <p className="text-sm text-muted">
-              © 2024 Pleno Transcribe. All rights reserved.
-            </p>
+            <div className="flex items-center gap-6 text-sm text-muted">
+              <a
+                href="/website/docs"
+                className="hover:text-foreground transition-colors"
+              >
+                Docs
+              </a>
+              <a
+                href="https://github.com/HikaruEgashira/pleno-transcribe"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground transition-colors"
+              >
+                GitHub
+              </a>
+              <span>© 2025 Pleno Transcribe</span>
+            </div>
           </div>
         </footer>
       </div>

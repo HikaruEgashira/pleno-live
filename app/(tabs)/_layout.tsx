@@ -42,7 +42,7 @@ export default function TabLayout() {
           }}
         >
           <Tabs.Screen
-            name="index"
+            name="notes"
             options={{
               title: "ノート",
               tabBarIcon: ({ color }) => <IconSymbol size={26} name="folder.fill" color={color} />,

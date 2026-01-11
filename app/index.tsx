@@ -446,9 +446,9 @@ function VoiceMemoLanding() {
 }
 
 export default function Index() {
-  // モバイルアプリでは録音一覧画面にリダイレクト
+  // モバイルアプリでは録音画面にリダイレクト
   if (Platform.OS !== "web") {
-    return <Redirect href="/(tabs)" />;
+    return <Redirect href="/(tabs)/record" />;
   }
 
   // ウェブではランディングページを表示
