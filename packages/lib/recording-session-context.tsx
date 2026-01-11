@@ -521,7 +521,7 @@ const defaultState: RecordingSessionState = {
 const defaultValue: RecordingSessionContextValue = {
   state: defaultState,
   pulseAnim: new Animated.Value(1),
-  realtimeState: { isConnected: false, isConnecting: false, segments: [], error: null },
+  realtimeState: { isActive: false, segments: [], connectionStatus: 'disconnected', error: undefined },
   mergedSegments: [],
   startRecording: async () => {},
   pauseResume: async () => {},

@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
 import { ScreenContainer } from "@/packages/components/screen-container";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
@@ -61,11 +62,11 @@ export default function SettingsScreen() {
   const [settings, setSettings] = useState<SettingsState>({
     language: "auto",
     summaryTemplate: "general",
-    autoTranscribe: false,
-    autoSummarize: false,
+    autoTranscribe: true,
+    autoSummarize: true,
     transcriptionProvider: "elevenlabs",
     realtimeTranscription: {
-      enabled: false,
+      enabled: true,
       language: "ja",
       enableSpeakerDiarization: true,
     },
@@ -442,11 +443,15 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>アプリ情報</Text>
           <View style={styles.infoRow}>
             <Text style={[styles.infoLabel, { color: colors.muted }]}>バージョン</Text>
-            <Text style={[styles.infoValue, { color: colors.foreground }]}>1.0.0</Text>
+            <Text style={[styles.infoValue, { color: colors.foreground }]}>
+              {Constants.expoConfig?.version ?? "1.4.1"}
+            </Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={[styles.infoLabel, { color: colors.muted }]}>ビルド</Text>
-            <Text style={[styles.infoValue, { color: colors.foreground }]}>2024.01</Text>
+            <Text style={[styles.infoLabel, { color: colors.muted }]}>アプリ名</Text>
+            <Text style={[styles.infoValue, { color: colors.foreground }]}>
+              {Constants.expoConfig?.name ?? "Pleno Transcribe"}
+            </Text>
           </View>
         </View>
 

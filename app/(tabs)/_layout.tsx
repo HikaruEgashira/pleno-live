@@ -16,7 +16,7 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const segments = useSegments();
   const { showSidebar } = useResponsive();
-  const isWebsite = segments[0] === "website";
+  const isWebsite = (segments[0] as string) === "website";
   const isWeb = Platform.OS === "web";
   const bottomPadding = isWeb ? 12 : Math.max(insets.bottom, 8);
   const tabBarHeight = 56 + bottomPadding;

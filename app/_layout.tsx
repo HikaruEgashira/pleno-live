@@ -95,8 +95,8 @@ export default function RootLayout() {
   const stack = (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="(tabs)" options={{ lazy: true }} />
-      <Stack.Screen name="note/[id]" options={{ presentation: "card", lazy: true }} />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="note/[id]" options={{ presentation: "card" }} />
     </Stack>
   );
 
