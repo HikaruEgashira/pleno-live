@@ -1,4 +1,4 @@
-import { Tabs, useSegments } from "expo-router";
+import { Tabs, useSegments, Slot } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Platform, View, StyleSheet } from "react-native";
 
@@ -7,11 +7,15 @@ import { IconSymbol } from "@/packages/components/ui/icon-symbol";
 import { useColors } from "@/packages/hooks/use-colors";
 import { GlobalRecordingBar } from "@/packages/components/global-recording-bar";
 import { RecordingSessionProvider } from "@/packages/lib/recording-session-context";
+import { useResponsive } from "@/packages/hooks/use-responsive";
+import { SidebarNavigation } from "@/packages/components/sidebar-navigation";
+import { ResponsiveLayout } from "@/packages/components/responsive-layout";
 
 export default function TabLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const segments = useSegments();
+  const { showSidebar } = useResponsive();
   const isWebsite = segments[0] === "website";
   const isWeb = Platform.OS === "web";
   const bottomPadding = isWeb ? 12 : Math.max(insets.bottom, 8);
@@ -22,6 +26,27 @@ export default function TabLayout() {
     return null;
   }
 
+  // Desktop layout with sidebar
+  if (showSidebar) {
+    const desktopContent = (
+      <ResponsiveLayout
+        showSidebar={showSidebar}
+        sidebar={<SidebarNavigation />}
+        footer={<GlobalRecordingBar />}
+      >
+        <Slot />
+      </ResponsiveLayout>
+    );
+
+    // Web版でもRecordingSessionProviderを使用（録音機能のため）
+    return (
+      <RecordingSessionProvider>
+        {desktopContent}
+      </RecordingSessionProvider>
+    );
+  }
+
+  // Mobile layout with tabs
   const tabsContent = (
       <View style={styles.container}>
         <Tabs
@@ -73,11 +98,7 @@ export default function TabLayout() {
       </View>
   );
 
-  // ウェブではRecordingSessionProviderをスキップ（音声許可を求めない）
-  if (isWeb) {
-    return tabsContent;
-  }
-
+  // Web版でもRecordingSessionProviderを使用（録音機能のため）
   return (
     <RecordingSessionProvider>
       {tabsContent}

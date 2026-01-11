@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRecordings } from './recordings-context';
 import { useRealtimeTranscription } from '@/packages/hooks/use-realtime-transcription';
 import { useAudioMetering } from '@/packages/hooks/use-audio-metering';
+import { useBackgroundRecording } from '@/packages/hooks/use-background-recording';
 import { Recording, Highlight } from '@/packages/types/recording';
 
 const RECORDING_OPTIONS = {
@@ -81,6 +82,9 @@ export function RecordingSessionProvider({ children }: { children: React.ReactNo
     mergedSegments,
   } = useRealtimeTranscription();
 
+  // Enable background recording for iOS/Android
+  useBackgroundRecording(isRecording);
+
   // Load settings
   useEffect(() => {
     const loadSettings = async () => {
@@ -100,8 +104,8 @@ export function RecordingSessionProvider({ children }: { children: React.ReactNo
   // Request microphone permission (skip on web - permission will be requested on first recording)
   useEffect(() => {
     if (Platform.OS === 'web') {
-      // Web: マイク許可は録音開始時にブラウザが自動的に求める
-      setHasPermission(null);
+      // Web: マイク許可は録音開始時にブラウザが自動的に求めるので、trueとして扱う
+      setHasPermission(true);
       return;
     }
     (async () => {

@@ -18,6 +18,7 @@ import { ScreenContainer } from "@/packages/components/screen-container";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
 import { useRecordings } from "@/packages/lib/recordings-context";
 import { useColors } from "@/packages/hooks/use-colors";
+import { useResponsive } from "@/packages/hooks/use-responsive";
 import { Recording } from "@/packages/types/recording";
 
 function formatDuration(seconds: number): string {
@@ -65,9 +66,10 @@ interface RecordingCardProps {
   recording: Recording;
   onPress: () => void;
   onDelete: () => void;
+  columns: number;
 }
 
-const RecordingCard = React.memo(function RecordingCard({ recording, onPress, onDelete }: RecordingCardProps) {
+const RecordingCard = React.memo(function RecordingCard({ recording, onPress, onDelete, columns }: RecordingCardProps) {
   const colors = useColors();
   const statusInfo = getStatusLabel(recording.status);
   const swipeableRef = useRef<Swipeable>(null);
@@ -129,12 +131,22 @@ const RecordingCard = React.memo(function RecordingCard({ recording, onPress, on
     );
   };
 
+  const cardWidth = columns > 1 ? `${Math.floor(100 / columns) - 2}%` as const : "100%" as const;
+
   const cardContent = (
     <TouchableOpacity
       onPress={onPress}
       onLongPress={handleLongPress}
       activeOpacity={0.7}
-      style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          width: cardWidth,
+          marginHorizontal: columns > 1 ? "1%" : 0,
+        },
+      ]}
     >
       <View style={styles.cardHeader}>
         <Text style={[styles.cardTitle, { color: colors.foreground }]} numberOfLines={1}>
@@ -200,13 +212,15 @@ const RecordingCard = React.memo(function RecordingCard({ recording, onPress, on
     prevProps.recording.title === nextProps.recording.title &&
     prevProps.recording.duration === nextProps.recording.duration &&
     prevProps.recording.highlights.length === nextProps.recording.highlights.length &&
-    prevProps.recording.transcript?.text === nextProps.recording.transcript?.text
+    prevProps.recording.transcript?.text === nextProps.recording.transcript?.text &&
+    prevProps.columns === nextProps.columns
   );
 });
 
 export default function HomeScreen() {
   const router = useRouter();
   const colors = useColors();
+  const { columns, isDesktop } = useResponsive();
   const { state, deleteRecording } = useRecordings();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
@@ -319,14 +333,21 @@ export default function HomeScreen() {
       <FlatList
         data={filteredRecordings}
         keyExtractor={(item) => item.id}
+        key={`grid-${columns}`}
+        numColumns={columns}
         renderItem={({ item }) => (
           <RecordingCard
             recording={item}
             onPress={() => handleRecordingPress(item.id)}
             onDelete={() => handleDelete(item.id)}
+            columns={columns}
           />
         )}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          isDesktop && styles.listContentDesktop,
+        ]}
+        columnWrapperStyle={columns > 1 ? styles.columnWrapper : undefined}
         ListEmptyComponent={renderEmptyState}
         showsVerticalScrollIndicator={false}
         // パフォーマンス最適化: 大量データ対応
@@ -334,11 +355,6 @@ export default function HomeScreen() {
         maxToRenderPerBatch={10}
         windowSize={5}
         removeClippedSubviews={true}
-        getItemLayout={(data, index) => ({
-          length: 120, // 推定カード高さ
-          offset: 120 * index,
-          index,
-        })}
       />
     </ScreenContainer>
   );
@@ -393,6 +409,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 100,
     flexGrow: 1,
+  },
+  listContentDesktop: {
+    maxWidth: 1200,
+    alignSelf: "center",
+    width: "100%",
+  },
+  columnWrapper: {
+    justifyContent: "flex-start",
   },
   card: {
     padding: 16,

@@ -52,8 +52,8 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const segments = useSegments();
-  // ウェブのランディングページ（/）では録音機能をスキップ
-  const isWebLanding = Platform.OS === "web" && segments.length === 0;
+  // ウェブでもAppProvidersを常に使用（tRPCコンテキストが必要なため）
+  const isWebLanding = false;
 
   const initialInsets = initialWindowMetrics?.insets ?? DEFAULT_WEB_INSETS;
   const initialFrame = initialWindowMetrics?.frame ?? DEFAULT_WEB_FRAME;
