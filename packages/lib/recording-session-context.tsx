@@ -41,7 +41,6 @@ interface RecordingSessionContextValue {
   cancelRecording: () => Promise<void>;
   addHighlight: () => void;
   clearJustCompleted: () => void;
-  tryAutoStartOnFirstLaunch: () => void;
 }
 
 const RecordingSessionContext = createContext<RecordingSessionContextValue | null>(null);
@@ -60,7 +59,6 @@ export function RecordingSessionProvider({ children }: { children: React.ReactNo
   const [justCompleted, setJustCompleted] = useState(false);
 
   const isStartingRef = useRef(false);
-  const hasAutoStartedOnFirstLaunchRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -448,16 +446,6 @@ export function RecordingSessionProvider({ children }: { children: React.ReactNo
     setJustCompleted(false);
   }, []);
 
-  const tryAutoStartOnFirstLaunch = useCallback(() => {
-    if (hasAutoStartedOnFirstLaunchRef.current || isRecording) {
-      return;
-    }
-    if (hasPermission) {
-      hasAutoStartedOnFirstLaunchRef.current = true;
-      startRecording();
-    }
-  }, [hasPermission, isRecording, startRecording]);
-
   const state: RecordingSessionState = {
     isRecording,
     isPaused,
@@ -484,7 +472,6 @@ export function RecordingSessionProvider({ children }: { children: React.ReactNo
         cancelRecording,
         addHighlight: addHighlightHandler,
         clearJustCompleted,
-        tryAutoStartOnFirstLaunch,
       }}
     >
       {children}
@@ -517,7 +504,6 @@ const defaultValue: RecordingSessionContextValue = {
   cancelRecording: async () => {},
   addHighlight: () => {},
   clearJustCompleted: () => {},
-  tryAutoStartOnFirstLaunch: () => {},
 };
 
 export function useRecordingSession() {

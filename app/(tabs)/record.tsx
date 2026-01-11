@@ -43,7 +43,6 @@ export default function RecordScreen() {
     realtimeState,
     mergedSegments,
     startRecording,
-    tryAutoStartOnFirstLaunch,
   } = useRecordingSession();
 
   const {
@@ -57,11 +56,6 @@ export default function RecordScreen() {
 
   // Keep screen awake during recording
   useKeepAwake();
-
-  // Auto-start recording only on first app launch
-  useEffect(() => {
-    tryAutoStartOnFirstLaunch();
-  }, [tryAutoStartOnFirstLaunch]);
 
   // Auto-scroll realtime transcript
   useEffect(() => {
