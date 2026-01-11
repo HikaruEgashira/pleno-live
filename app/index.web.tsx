@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mic, Zap, Clock, Shield } from "lucide-react";
+import { Mic, Zap, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/packages/lib/cn";
 
@@ -138,19 +138,19 @@ function Button({
 const features = [
   {
     icon: Zap,
-    title: "Instant Transcription",
+    title: "Instant Launch",
     description:
-      "Convert your voice memos to text in seconds with AI-powered accuracy",
+      "アプリを開いてすぐに録音開始。待ち時間なしで素早くメモを取れます",
   },
   {
-    icon: Clock,
-    title: "Save Time",
-    description: "Stop typing. Start speaking. Get more done in less time",
+    icon: Mic,
+    title: "Realtime STT",
+    description: "Scribe v2 Realtime SSTによるリアルタイム文字起こしと話者分離",
   },
   {
     icon: Shield,
-    title: "Secure & Private",
-    description: "Your voice memos are encrypted and stored securely",
+    title: "Local & Private",
+    description: "全てはこの端末上に保存。運営会社のサーバーには送信されず、AIモデルの学習にも使用されません",
   },
 ];
 
@@ -275,8 +275,8 @@ function VoiceMemoLanding() {
                 animate="visible"
                 className="text-lg md:text-xl text-muted mb-10 max-w-2xl mx-auto leading-relaxed"
               >
-                Transform your voice memos into searchable, organized text.
-                Capture ideas on the go and never lose a thought again.
+                ボイスメモをAIで瞬時にテキスト化。
+                OSSのリアルタイム文字起こしアプリです。
               </motion.p>
 
               <motion.div
@@ -334,7 +334,7 @@ function VoiceMemoLanding() {
                     <p className="text-sm text-muted font-medium">
                       {isRecording
                         ? "Recording..."
-                        : "Click to start recording"}
+                        : "タップして録音開始"}
                     </p>
                   </div>
                 </div>
@@ -354,10 +354,10 @@ function VoiceMemoLanding() {
               className="text-center mb-12"
             >
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Everything you need
+                Features
               </h2>
               <p className="text-lg text-muted">
-                Powerful features to help you work smarter
+                よりスマートに仕事をこなすための機能を搭載
               </p>
             </motion.div>
 
@@ -396,10 +396,10 @@ function VoiceMemoLanding() {
             className="max-w-3xl mx-auto text-center"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Ready to get started?
+              Get Started
             </h2>
             <p className="text-lg text-muted mb-8">
-              Download the app and start turning your voice into knowledge
+              アプリをダウンロードして、声をナレッジに変換しましょう
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a href="https://github.com/HikaruEgashira/pleno-transcribe/releases">
