@@ -22,7 +22,7 @@ sdk.dir=/opt/homebrew/share/android-commandlinetools
 
 2. `.env` に本番APIを設定:
 ```
-EXPO_PUBLIC_API_URL=https://transcribe.plenoai.com
+EXPO_PUBLIC_API_URL=https://live.plenoai.com
 ```
 
 ### ビルド手順
@@ -42,15 +42,15 @@ cd android && ./gradlew assembleRelease
 
 1. QRコード生成:
 ```bash
-node scripts/generate_qr.mjs "https://github.com/HikaruEgashira/pleno-transcribe/releases/download/vX.X.X/pleno-transcribe-vX.X.X.apk"
+node scripts/generate_qr.mjs "https://github.com/HikaruEgashira/pleno-live/releases/download/vX.X.X/pleno-live-vX.X.X.apk"
 ```
 
 2. GitHub Release作成:
 ```bash
 gh release create vX.X.X \
-  pleno-transcribe-vX.X.X.apk \
+  pleno-live-vX.X.X.apk \
   qr-code.png \
-  --title "Pleno Transcribe vX.X.X" \
+  --title "Pleno Live vX.X.X" \
   --notes "リリースノート"
 ```
 

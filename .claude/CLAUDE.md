@@ -1,4 +1,4 @@
-# pleno-transcribe
+# pleno-live
 
 Expo + tRPC ボイスメモアプリ
 

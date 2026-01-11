@@ -26,7 +26,7 @@ export default function PrivacyPage() {
         <View className="space-y-6">
           <Text className="text-foreground leading-6">
             Pleno
-            Transcribe（以下「本アプリ」）は、ユーザーのプライバシーを最優先に設計されています。
+            Live（以下「本アプリ」）は、ユーザーのプライバシーを最優先に設計されています。
           </Text>
 
           <View>
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
             <Pressable
               onPress={() =>
                 Linking.openURL(
-                  "https://github.com/HikaruEgashira/pleno-transcribe/issues"
+                  "https://github.com/HikaruEgashira/pleno-live/issues"
                 )
               }
             >

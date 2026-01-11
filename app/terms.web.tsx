@@ -100,12 +100,12 @@ export default function TermsPage() {
                 <Mic className="w-4 h-4 text-white" />
               </div>
               <span className="font-medium text-foreground">
-                Pleno Transcribe
+                Pleno Live
               </span>
             </a>
             <div className="flex items-center gap-4">
               <a
-                href="https://github.com/HikaruEgashira/pleno-transcribe"
+                href="https://github.com/HikaruEgashira/pleno-live"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg hover:bg-surface transition-colors"
@@ -316,7 +316,7 @@ export default function TermsPage() {
             <p>
               本規約に関するお問い合わせは、GitHubの
               <a
-                href="https://github.com/HikaruEgashira/pleno-transcribe/issues"
+                href="https://github.com/HikaruEgashira/pleno-live/issues"
                 className="text-primary hover:underline ml-1"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -345,7 +345,7 @@ export default function TermsPage() {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="max-w-4xl mx-auto px-6 text-center text-sm text-muted">
-          © 2025 Pleno Transcribe
+          © 2025 Pleno Live
         </div>
       </footer>
     </div>

@@ -220,7 +220,7 @@ function VoiceMemoLanding() {
                 <Mic className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-semibold text-foreground">
-                Pleno Transcribe
+                Pleno Live
               </span>
             </div>
             <div className="hidden md:flex items-center gap-8">
@@ -228,7 +228,7 @@ function VoiceMemoLanding() {
                 Features
               </a>
               <a
-                href="https://github.com/HikaruEgashira/pleno-transcribe/releases"
+                href="https://github.com/HikaruEgashira/pleno-live/releases"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -286,10 +286,10 @@ function VoiceMemoLanding() {
                 animate="visible"
                 className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
               >
-                <a href="https://github.com/HikaruEgashira/pleno-transcribe/releases">
+                <a href="https://github.com/HikaruEgashira/pleno-live/releases">
                   <Button size="lg">Download App</Button>
                 </a>
-                <a href="https://github.com/HikaruEgashira/pleno-transcribe">
+                <a href="https://github.com/HikaruEgashira/pleno-live">
                   <Button size="lg" variant="outline">
                     View on GitHub
                   </Button>
@@ -402,10 +402,10 @@ function VoiceMemoLanding() {
               アプリをダウンロードして、声をナレッジに変換しましょう
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a href="https://github.com/HikaruEgashira/pleno-transcribe/releases">
+              <a href="https://github.com/HikaruEgashira/pleno-live/releases">
                 <Button size="lg">Download Now</Button>
               </a>
-              <a href="https://github.com/HikaruEgashira/pleno-transcribe">
+              <a href="https://github.com/HikaruEgashira/pleno-live">
                 <Button size="lg" variant="outline">
                   Star on GitHub
                 </Button>
@@ -422,12 +422,12 @@ function VoiceMemoLanding() {
                 <Mic className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm font-medium text-foreground">
-                Pleno Transcribe
+                Pleno Live
               </span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted">
               <a
-                href="https://github.com/HikaruEgashira/pleno-transcribe"
+                href="https://github.com/HikaruEgashira/pleno-live"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-foreground transition-colors"
@@ -454,7 +454,7 @@ function VoiceMemoLanding() {
               >
                 利用規約
               </a>
-              <span>© 2025 Pleno Transcribe</span>
+              <span>© 2025 Pleno Live</span>
             </div>
           </div>
         </footer>

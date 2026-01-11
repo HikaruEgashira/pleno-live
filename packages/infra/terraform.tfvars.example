@@ -1,5 +1,5 @@
 aws_region         = "ap-northeast-1"
-project_name       = "pleno-transcribe-api"
+project_name       = "pleno-live-api"
 environment        = "prod"
 elevenlabs_api_key = "your-elevenlabs-api-key"
 gemini_api_key     = "your-gemini-api-key"

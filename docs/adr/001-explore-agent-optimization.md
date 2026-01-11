@@ -74,4 +74,4 @@ lib/           # ユーティリティ
 ## References
 
 - 実験実施日: 2026-01-10, 2026-01-11
-- 対象: pleno-transcribe プロジェクト
+- 対象: pleno-live プロジェクト

@@ -26,7 +26,7 @@ export default function TermsPage() {
         <View className="space-y-6">
           <Text className="text-foreground leading-6">
             本利用規約（以下「本規約」）は、Pleno
-            Transcribe（以下「本アプリ」）の利用条件を定めるものです。
+            Live（以下「本アプリ」）の利用条件を定めるものです。
             本アプリをインストールまたは使用することにより、ユーザーは本規約に同意したものとみなされます。
           </Text>
 
@@ -99,7 +99,7 @@ export default function TermsPage() {
             <Pressable
               onPress={() =>
                 Linking.openURL(
-                  "https://github.com/HikaruEgashira/pleno-transcribe/issues"
+                  "https://github.com/HikaruEgashira/pleno-live/issues"
                 )
               }
             >

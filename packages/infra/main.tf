@@ -25,7 +25,7 @@ variable "aws_region" {
 }
 
 variable "project_name" {
-  default = "pleno-audit-api"
+  default = "pleno-live-api"
 }
 
 variable "environment" {
@@ -162,7 +162,7 @@ resource "aws_lambda_permission" "api_gateway" {
 
 # Custom Domain Configuration
 variable "domain_name" {
-  default = "transcribe.plenoai.com"
+  default = "live.plenoai.com"
 }
 
 # ACM Certificate for custom domain
