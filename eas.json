@@ -15,12 +15,18 @@
     "preview": {
       "extends": "base",
       "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://transcribe.plenoai.com"
+      },
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
-      "extends": "base"
+      "extends": "base",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://transcribe.plenoai.com"
+      }
     }
   },
   "submit": {
