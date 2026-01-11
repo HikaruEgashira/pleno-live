@@ -68,3 +68,10 @@ Thumbs.db
 terraform.tfvars
 .terraform.lock.hcl
 .env
+
+# Build artifacts
+*.apk
+credentials.json
+credentials/
+android/
+

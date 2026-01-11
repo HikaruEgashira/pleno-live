@@ -23,15 +23,15 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.1.1",
+  version: "1.3.0",
   owner: "hikae",
   extra: {
     eas: {
-      projectId: "eb6a1db1-3fdc-45fd-b354-c135b2313a6c",
+      projectId: "a4f0e87b-1f9a-48d7-a813-94d61f5bc29a",
     },
   },
   updates: {
-    url: "https://u.expo.dev/eb6a1db1-3fdc-45fd-b354-c135b2313a6c",
+    url: "https://u.expo.dev/a4f0e87b-1f9a-48d7-a813-94d61f5bc29a",
   },
   runtimeVersion: {
     policy: "appVersion",
