@@ -13,7 +13,7 @@ provider "aws" {
 }
 
 variable "project_name" {
-  default = "voicenote-api"
+  default = "pleno-transcribe-api"
 }
 
 locals {

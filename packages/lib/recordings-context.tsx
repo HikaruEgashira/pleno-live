@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Recording, Highlight, Transcript, Summary, QAMessage } from '@/packages/types/recording';
 import type { TranscriptSegment as RealtimeTranscriptSegment } from '@/packages/types/realtime-transcription';
 
-const STORAGE_KEY = 'voicenote_recordings';
+const STORAGE_KEY = 'pleno_transcribe_recordings';
 
 interface RecordingsState {
   recordings: Recording[];

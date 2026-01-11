@@ -1,4 +1,4 @@
-# voicenote-ai
+# pleno-transcribe
 
 Expo + tRPC ボイスメモアプリ
 

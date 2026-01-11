@@ -451,7 +451,7 @@ export default function SettingsScreen() {
 
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: colors.muted }]}>
-            VoiceNote
+            Pleno Transcribe
           </Text>
           <Text style={[styles.footerSubtext, { color: colors.muted }]}>
             音声録音・文字起こし・AI要約アプリ

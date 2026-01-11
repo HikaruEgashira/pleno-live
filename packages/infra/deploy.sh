@@ -2,7 +2,7 @@
 set -e
 
 AWS_REGION=${AWS_REGION:-ap-northeast-1}
-PROJECT_NAME=${PROJECT_NAME:-voicenote-api}
+PROJECT_NAME=${PROJECT_NAME:-pleno-transcribe-api}
 ENVIRONMENT=${ENVIRONMENT:-prod}
 FUNCTION_NAME="${PROJECT_NAME}-${ENVIRONMENT}"
 

@@ -1,4 +1,4 @@
-# VoiceKeep
+# Pleno Transcribe
 
 音声メモアプリ
 
@@ -6,6 +6,6 @@
 
 Android APKをダウンロード:
 
-![QR Code](https://github.com/HikaruEgashira/voicekeep-ai/releases/download/v1.2.0/qr-code.png)
+![QR Code](https://github.com/HikaruEgashira/pleno-transcribe/releases/download/v1.2.0/qr-code.png)
 
-[Download APK](https://github.com/HikaruEgashira/voicekeep-ai/releases/download/v1.2.0/VoiceKeep.apk)
+[Download APK](https://github.com/HikaruEgashira/pleno-transcribe/releases/download/v1.2.0/PlenoTranscribe.apk)

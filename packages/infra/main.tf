@@ -8,10 +8,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "voicenote-api-terraform-state"
+    bucket         = "pleno-transcribe-api-terraform-state"
     key            = "prod/terraform.tfstate"
     region         = "ap-northeast-1"
-    dynamodb_table = "voicenote-api-terraform-lock"
+    dynamodb_table = "pleno-transcribe-api-terraform-lock"
     encrypt        = true
   }
 }
@@ -25,7 +25,7 @@ variable "aws_region" {
 }
 
 variable "project_name" {
-  default = "voicenote-api"
+  default = "pleno-transcribe-api"
 }
 
 variable "environment" {

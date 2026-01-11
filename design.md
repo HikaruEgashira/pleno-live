@@ -1,8 +1,8 @@
-# VoiceKeep - Design Document
+# Pleno Transcribe - Design Document
 
 ## Overview
 
-音声録音、AI文字起こし、要約、Q&A機能を備えたモバイルアプリ。VoiceKeepの主要機能をReact Native/Expoで再現する。
+音声録音、AI文字起こし、要約、Q&A機能を備えたモバイルアプリ。Pleno Transcribeの主要機能をReact Native/Expoで実装する。
 
 ## Screen List
 
