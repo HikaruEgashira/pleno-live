@@ -16,7 +16,7 @@ import { Swipeable } from "react-native-gesture-handler";
 
 import { ScreenContainer } from "@/packages/components/screen-container";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
-import { useRecordings } from "@/packages/lib/recordings-context";
+import { useRecordings } from "@/packages/contexts/recordings-context";
 import { useColors } from "@/packages/hooks/use-colors";
 import { useResponsive } from "@/packages/hooks/use-responsive";
 import { Recording } from "@/packages/types/recording";

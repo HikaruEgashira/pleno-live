@@ -9,13 +9,13 @@ import {
   Platform,
 } from "react-native";
 import { useKeepAwake } from "expo-keep-awake";
-import { SystemAudioStream, AudioSource } from "@/packages/lib/system-audio-stream";
+import { SystemAudioStream, AudioSource } from "@/packages/audio/system-audio-stream";
 
 import { ScreenContainer } from "@/packages/components/screen-container";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
 import { useColors } from "@/packages/hooks/use-colors";
 import { useResponsive } from "@/packages/hooks/use-responsive";
-import { useRecordingSession } from "@/packages/lib/recording-session-context";
+import { useRecordingSession } from "@/packages/contexts/recording-session-context";
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);

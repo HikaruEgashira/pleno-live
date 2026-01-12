@@ -1,6 +1,6 @@
 import { View, type ViewProps } from "react-native";
 
-import { cn } from "@/packages/lib/utils";
+import { cn } from "@/packages/lib/cn";
 
 export interface ThemedViewProps extends ViewProps {
   className?: string;

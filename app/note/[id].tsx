@@ -17,7 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ScreenContainer } from "@/packages/components/screen-container";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
-import { useRecordings } from "@/packages/lib/recordings-context";
+import { useRecordings } from "@/packages/contexts/recordings-context";
 import { useColors } from "@/packages/hooks/use-colors";
 import { QAMessage } from "@/packages/types/recording";
 import { trpc } from "@/packages/lib/trpc";

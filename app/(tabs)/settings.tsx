@@ -15,7 +15,7 @@ import Constants from "expo-constants";
 
 import { ScreenContainer } from "@/packages/components/screen-container";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
-import { useRecordings } from "@/packages/lib/recordings-context";
+import { useRecordings } from "@/packages/contexts/recordings-context";
 import { useColors } from "@/packages/hooks/use-colors";
 
 type SummaryTemplate = "general" | "meeting" | "interview" | "lecture";

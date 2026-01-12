@@ -6,7 +6,7 @@ import { HapticTab } from "@/packages/components/haptic-tab";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
 import { useColors } from "@/packages/hooks/use-colors";
 import { GlobalRecordingBar } from "@/packages/components/global-recording-bar";
-import { RecordingSessionProvider } from "@/packages/lib/recording-session-context";
+import { RecordingSessionProvider } from "@/packages/contexts/recording-session-context";
 import { useResponsive } from "@/packages/hooks/use-responsive";
 import { SidebarNavigation } from "@/packages/components/sidebar-navigation";
 import { ResponsiveLayout } from "@/packages/components/responsive-layout";

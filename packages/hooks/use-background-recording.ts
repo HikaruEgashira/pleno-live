@@ -3,7 +3,7 @@ import { AppState, AppStateStatus, Platform } from "react-native";
 import {
   startBackgroundRecordingTask,
   stopBackgroundRecordingTask,
-} from "@/packages/lib/background-recording-task";
+} from "@/packages/audio/background-recording-task";
 
 /**
  * バックグラウンド録音を管理するフック

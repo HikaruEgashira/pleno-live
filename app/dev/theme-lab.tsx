@@ -6,7 +6,7 @@ import { ThemedView } from "@/packages/components/themed-view";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
 import { SchemeColors, type ColorScheme } from "@/packages/constants/theme";
 import { useColors } from "@/packages/hooks/use-colors";
-import { useThemeContext } from "@/packages/lib/theme-provider";
+import { useThemeContext } from "@/packages/contexts/theme-provider";
 
 type PaletteName = keyof typeof SchemeColors.light;
 

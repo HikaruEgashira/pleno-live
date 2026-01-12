@@ -7,7 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { Platform } from "react-native";
 import "@/packages/lib/_core/nativewind-pressable";
-import { ThemeProvider } from "@/packages/lib/theme-provider";
+import { ThemeProvider } from "@/packages/contexts/theme-provider";
 import {
   SafeAreaFrameContext,
   SafeAreaInsetsContext,
@@ -18,7 +18,7 @@ import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 
 import { trpc, createTRPCClient } from "@/packages/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/packages/lib/_core/manus-runtime";
-import { RecordingsProvider } from "@/packages/lib/recordings-context";
+import { RecordingsProvider } from "@/packages/contexts/recordings-context";
 
 function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(

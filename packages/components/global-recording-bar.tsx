@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native
 
 import { IconSymbol } from '@/packages/components/ui/icon-symbol';
 import { useColors } from '@/packages/hooks/use-colors';
-import { useRecordingSession } from '@/packages/lib/recording-session-context';
+import { useRecordingSession } from '@/packages/contexts/recording-session-context';
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
