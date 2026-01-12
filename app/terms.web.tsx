@@ -345,7 +345,7 @@ export default function TermsPage() {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="max-w-4xl mx-auto px-6 text-center text-sm text-muted">
-          © 2025 Pleno Live
+          © 2026 Pleno Live
         </div>
       </footer>
     </div>

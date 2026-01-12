@@ -454,7 +454,7 @@ function VoiceMemoLanding() {
               >
                 利用規約
               </a>
-              <span>© 2025 Pleno Live</span>
+              <span>© 2026 Pleno Live</span>
             </div>
           </div>
         </footer>
