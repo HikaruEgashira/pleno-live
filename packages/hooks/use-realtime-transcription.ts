@@ -10,6 +10,7 @@ import { Alert, Platform } from "react-native";
 import { trpc } from "@/packages/lib/trpc";
 import { RealtimeTranscriptionClient } from "@/packages/lib/realtime-transcription";
 import { SystemAudioStream, AudioSource } from "@/packages/lib/system-audio-stream";
+import { NativeSystemAudioCapture } from "@/packages/lib/native-system-audio";
 import type {
   TranscriptSegment,
   RealtimeTranscriptionState,
@@ -60,6 +61,7 @@ export function useRealtimeTranscription() {
   const currentRecordingIdRef = useRef<string | null>(null);
   const audioSubscriptionRef = useRef<{ remove: () => void } | null>(null);
   const systemAudioStreamRef = useRef<SystemAudioStream | null>(null);
+  const nativeSystemAudioRef = useRef<NativeSystemAudioCapture | null>(null);
 
   // tRPC mutation for generating realtime token
   const generateTokenMutation = trpc.ai.generateRealtimeToken.useMutation();
@@ -73,6 +75,9 @@ export function useRealtimeTranscription() {
       if (systemAudioStreamRef.current) {
         systemAudioStreamRef.current.stop();
       }
+      if (nativeSystemAudioRef.current) {
+        nativeSystemAudioRef.current.stop();
+      }
       if (clientRef.current) {
         clientRef.current.disconnect();
       }
@@ -82,7 +87,47 @@ export function useRealtimeTranscription() {
   /**
    * 音声ストリーミングを開始（ネイティブプラットフォーム用）
    */
-  const startNativeAudioStreaming = useCallback(async () => {
+  const startNativeAudioStreaming = useCallback(async (audioSource: AudioSource = 'microphone') => {
+    // システム音声キャプチャが必要で、サポートされている場合はネイティブモジュールを使用
+    if (audioSource !== 'microphone' && NativeSystemAudioCapture.isSupported()) {
+      try {
+        console.log("[useRealtimeTranscription] Starting native system audio capture...");
+
+        nativeSystemAudioRef.current = new NativeSystemAudioCapture();
+
+        // パーミッションをリクエスト
+        const hasPermission = await nativeSystemAudioRef.current.requestPermission();
+        if (!hasPermission) {
+          console.warn("[useRealtimeTranscription] System audio permission denied");
+          // フォールバックでマイク録音を試みる
+          if (ExpoPlayAudioStream) {
+            audioSource = 'microphone';
+          } else {
+            throw new Error("No audio source available");
+          }
+        } else {
+          // システム音声キャプチャを開始
+          await nativeSystemAudioRef.current.start(audioSource, (base64Audio) => {
+            if (clientRef.current?.isConnected) {
+              clientRef.current.sendAudioChunk(base64Audio, 16000);
+            }
+          }, 16000);
+
+          console.log("[useRealtimeTranscription] Native system audio streaming started");
+          return;
+        }
+      } catch (error) {
+        console.error("[useRealtimeTranscription] Failed to start native system audio:", error);
+        // フォールバックでマイク録音を試みる
+        if (ExpoPlayAudioStream) {
+          audioSource = 'microphone';
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    // マイクのみの場合は既存の expo-audio-stream を使用
     if (!ExpoPlayAudioStream) {
       console.warn("[useRealtimeTranscription] ExpoPlayAudioStream not available");
       return;
@@ -193,13 +238,13 @@ export function useRealtimeTranscription() {
 
   /**
    * 音声ストリーミングを開始（プラットフォームに応じて）
-   * @param audioSource - 音声ソース (Webのみ有効)
+   * @param audioSource - 音声ソース (全プラットフォーム有効)
    */
   const startAudioStreaming = useCallback(async (audioSource: AudioSource = 'microphone') => {
     if (Platform.OS === "web") {
       await startWebAudioStreaming(audioSource);
     } else {
-      await startNativeAudioStreaming();
+      await startNativeAudioStreaming(audioSource);
     }
   }, [startNativeAudioStreaming, startWebAudioStreaming]);
 
@@ -207,22 +252,29 @@ export function useRealtimeTranscription() {
    * 音声ストリーミングを停止（ネイティブプラットフォーム用）
    */
   const stopNativeAudioStreaming = useCallback(async () => {
-    if (!ExpoPlayAudioStream) {
-      return;
+    // ネイティブシステム音声キャプチャを停止
+    if (nativeSystemAudioRef.current) {
+      try {
+        await nativeSystemAudioRef.current.stop();
+        nativeSystemAudioRef.current = null;
+      } catch (error) {
+        console.error("[useRealtimeTranscription] Failed to stop native system audio:", error);
+      }
     }
 
-    try {
-      console.log("[useRealtimeTranscription] Stopping native audio streaming...");
+    // expo-audio-stream を停止
+    if (ExpoPlayAudioStream && audioSubscriptionRef.current) {
+      try {
+        console.log("[useRealtimeTranscription] Stopping native audio streaming...");
 
-      if (audioSubscriptionRef.current) {
         audioSubscriptionRef.current.remove();
         audioSubscriptionRef.current = null;
-      }
 
-      await ExpoPlayAudioStream.stopRecording();
-      console.log("[useRealtimeTranscription] Native audio streaming stopped");
-    } catch (error) {
-      console.error("[useRealtimeTranscription] Failed to stop native audio streaming:", error);
+        await ExpoPlayAudioStream.stopRecording();
+        console.log("[useRealtimeTranscription] Native audio streaming stopped");
+      } catch (error) {
+        console.error("[useRealtimeTranscription] Failed to stop native audio streaming:", error);
+      }
     }
   }, []);
 

@@ -47,6 +47,7 @@ const config: ExpoConfig = {
     infoPlist: {
       UIBackgroundModes: ["audio"],
       NSMicrophoneUsageDescription: "音声録音のためにマイクへのアクセスが必要です。",
+      "RPScreenCaptureDescription": "システム音声を録音するために画面キャプチャ機能を使用します。",
       ITSAppUsesNonExemptEncryption: false,
     },
   },
@@ -65,6 +66,7 @@ const config: ExpoConfig = {
       "RECORD_AUDIO",
       "FOREGROUND_SERVICE",
       "FOREGROUND_SERVICE_MICROPHONE",
+      "FOREGROUND_SERVICE_MEDIA_PROJECTION",
     ],
     intentFilters: [
       {

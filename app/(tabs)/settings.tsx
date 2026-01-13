@@ -235,65 +235,67 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* Audio Source (Web only) */}
-        {Platform.OS === "web" && (
-          <View style={[styles.section, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>音声ソース</Text>
-            {AUDIO_SOURCES.map((source) => (
-              <TouchableOpacity
-                key={source.value}
-                onPress={() => {
-                  if (Platform.OS !== "web") {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }
-                  setSettings((prev) => ({ ...prev, audioSource: source.value }));
-                }}
-                style={[
-                  styles.templateItem,
-                  {
-                    backgroundColor:
-                      settings.audioSource === source.value
-                        ? colors.primary + "15"
-                        : "transparent",
-                    borderColor:
-                      settings.audioSource === source.value ? colors.primary : colors.border,
-                  },
-                ]}
-              >
-                <IconSymbol name={source.icon as any} size={20} color={settings.audioSource === source.value ? colors.primary : colors.muted} />
-                <View style={styles.templateContent}>
-                  <Text
-                    style={[
-                      styles.templateLabel,
-                      {
-                        color:
-                          settings.audioSource === source.value
-                            ? colors.primary
-                            : colors.foreground,
-                      },
-                    ]}
-                  >
-                    {source.label}
-                  </Text>
-                  <Text style={[styles.templateDescription, { color: colors.muted }]}>
-                    {source.description}
-                  </Text>
-                </View>
-                {settings.audioSource === source.value && (
-                  <IconSymbol name="checkmark" size={20} color={colors.primary} />
-                )}
-              </TouchableOpacity>
-            ))}
-            {settings.audioSource !== "microphone" && (
-              <View style={[styles.noteBox, { backgroundColor: colors.primary + "15" }]}>
-                <IconSymbol name="info.circle.fill" size={16} color={colors.primary} />
-                <Text style={[styles.noteText, { color: colors.primary }]}>
-                  録音開始時に画面共有ダイアログが表示されます
+        {/* Audio Source */}
+        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>音声ソース</Text>
+          {AUDIO_SOURCES.map((source) => (
+            <TouchableOpacity
+              key={source.value}
+              onPress={() => {
+                if (Platform.OS !== "web") {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                setSettings((prev) => ({ ...prev, audioSource: source.value }));
+              }}
+              style={[
+                styles.templateItem,
+                {
+                  backgroundColor:
+                    settings.audioSource === source.value
+                      ? colors.primary + "15"
+                      : "transparent",
+                  borderColor:
+                    settings.audioSource === source.value ? colors.primary : colors.border,
+                },
+              ]}
+            >
+              <IconSymbol name={source.icon as any} size={20} color={settings.audioSource === source.value ? colors.primary : colors.muted} />
+              <View style={styles.templateContent}>
+                <Text
+                  style={[
+                    styles.templateLabel,
+                    {
+                      color:
+                        settings.audioSource === source.value
+                          ? colors.primary
+                          : colors.foreground,
+                    },
+                  ]}
+                >
+                  {source.label}
+                </Text>
+                <Text style={[styles.templateDescription, { color: colors.muted }]}>
+                  {source.description}
                 </Text>
               </View>
-            )}
-          </View>
-        )}
+              {settings.audioSource === source.value && (
+                <IconSymbol name="checkmark" size={20} color={colors.primary} />
+              )}
+            </TouchableOpacity>
+          ))}
+          {settings.audioSource !== "microphone" && (
+            <View style={[styles.noteBox, { backgroundColor: colors.primary + "15" }]}>
+              <IconSymbol name="info.circle.fill" size={16} color={colors.primary} />
+              <Text style={[styles.noteText, { color: colors.primary }]}>
+                {Platform.OS === "web"
+                  ? "録音開始時に画面共有ダイアログが表示されます"
+                  : Platform.OS === "android"
+                  ? "Android 10以降が必要です。録音開始時に画面録画の許可が必要です"
+                  : "iOS 11以降が必要です。録音開始時に画面録画の許可が必要です"}
+              </Text>
+            </View>
+          )}
+        </View>
 
         {/* Language */}
         <View style={[styles.section, { backgroundColor: colors.surface }]}>

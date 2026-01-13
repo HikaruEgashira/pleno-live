@@ -1,0 +1,30 @@
+{
+  "name": "expo-system-audio",
+  "version": "1.0.0",
+  "description": "Expo module for system audio capture on Android and iOS",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "build": "expo-module build"
+  },
+  "keywords": [
+    "expo",
+    "expo-module",
+    "audio",
+    "screen-capture",
+    "system-audio"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HikaruEgashira/pleno-live",
+    "directory": "modules/expo-system-audio"
+  },
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "expo-module-scripts": "^3.5.2"
+  }
+}
