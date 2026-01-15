@@ -110,6 +110,9 @@ export default function NoteDetailScreen() {
   // Keywords mutation
   const keywordsMutation = trpc.ai.extractKeywords.useMutation();
 
+  // Sentiment analysis mutation
+  const sentimentMutation = trpc.ai.analyzeSentiment.useMutation();
+
   useEffect(() => {
     setAudioModeAsync({ playsInSilentMode: true });
     return () => {
@@ -296,6 +299,9 @@ const handleSummarize = async () => {
       if (recording.keywords.length === 0) {
         handleExtractKeywords();
       }
+      if (!recording.sentiment) {
+        handleAnalyzeSentiment();
+      }
     } catch (error) {
       console.error("Summary error:", error);
       updateRecording(recording.id, { status: "transcribed" });
@@ -349,6 +355,21 @@ const handleSummarize = async () => {
       }
     } catch (error) {
       console.error("Keywords extraction error:", error);
+    }
+  };
+
+  const handleAnalyzeSentiment = async () => {
+    if (!recording?.transcript) return;
+
+    try {
+      const result = await sentimentMutation.mutateAsync({
+        text: recording.transcript.text,
+      });
+      if (result) {
+        updateRecording(recording.id, { sentiment: result });
+      }
+    } catch (error) {
+      console.error("Sentiment analysis error:", error);
     }
   };
 
@@ -842,6 +863,122 @@ const handleSummarize = async () => {
                       </Text>
                     )}
                   </View>
+
+                  {/* Sentiment Analysis Section */}
+                  <View style={styles.summarySection}>
+                    <View style={styles.tagsSectionHeader}>
+                      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                        感情分析
+                      </Text>
+                      {!recording.sentiment && recording.transcript && (
+                        <TouchableOpacity
+                          onPress={handleAnalyzeSentiment}
+                          disabled={sentimentMutation.isPending}
+                          style={[styles.generateTagsButton, { backgroundColor: colors.surface }]}
+                        >
+                          {sentimentMutation.isPending ? (
+                            <ActivityIndicator size="small" color={colors.primary} />
+                          ) : (
+                            <>
+                              <IconSymbol name="sparkles" size={14} color={colors.primary} />
+                              <Text style={[styles.generateTagsText, { color: colors.primary }]}>
+                                分析
+                              </Text>
+                            </>
+                          )}
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    {recording.sentiment ? (
+                      <View style={styles.sentimentContainer}>
+                        <View style={styles.sentimentHeader}>
+                          <View
+                            style={[
+                              styles.sentimentBadge,
+                              {
+                                backgroundColor:
+                                  recording.sentiment.overallSentiment === 'positive'
+                                    ? colors.success + '20'
+                                    : recording.sentiment.overallSentiment === 'negative'
+                                    ? colors.error + '20'
+                                    : colors.muted + '20',
+                              },
+                            ]}
+                          >
+                            <IconSymbol
+                              name={
+                                recording.sentiment.overallSentiment === 'positive'
+                                  ? 'face.smiling'
+                                  : recording.sentiment.overallSentiment === 'negative'
+                                  ? 'face.smiling'
+                                  : 'face.smiling'
+                              }
+                              size={18}
+                              color={
+                                recording.sentiment.overallSentiment === 'positive'
+                                  ? colors.success
+                                  : recording.sentiment.overallSentiment === 'negative'
+                                  ? colors.error
+                                  : colors.muted
+                              }
+                            />
+                            <Text
+                              style={[
+                                styles.sentimentLabel,
+                                {
+                                  color:
+                                    recording.sentiment.overallSentiment === 'positive'
+                                      ? colors.success
+                                      : recording.sentiment.overallSentiment === 'negative'
+                                      ? colors.error
+                                      : colors.muted,
+                                },
+                              ]}
+                            >
+                              {recording.sentiment.overallSentiment === 'positive'
+                                ? 'ポジティブ'
+                                : recording.sentiment.overallSentiment === 'negative'
+                                ? 'ネガティブ'
+                                : 'ニュートラル'}
+                            </Text>
+                          </View>
+                          <Text style={[styles.sentimentScore, { color: colors.muted }]}>
+                            信頼度: {Math.round(recording.sentiment.confidence * 100)}%
+                          </Text>
+                        </View>
+                        {recording.sentiment.summary && (
+                          <Text style={[styles.sentimentSummary, { color: colors.foreground }]}>
+                            {recording.sentiment.summary}
+                          </Text>
+                        )}
+                        <View style={styles.emotionsGrid}>
+                          {Object.entries(recording.sentiment.emotions).map(([emotion, value]) => (
+                            <View key={emotion} style={styles.emotionItem}>
+                              <Text style={[styles.emotionLabel, { color: colors.muted }]}>
+                                {emotion === 'joy' ? '喜び' :
+                                 emotion === 'sadness' ? '悲しみ' :
+                                 emotion === 'anger' ? '怒り' :
+                                 emotion === 'fear' ? '恐れ' :
+                                 emotion === 'surprise' ? '驚き' : '嫌悪'}
+                              </Text>
+                              <View style={[styles.emotionBar, { backgroundColor: colors.border }]}>
+                                <View
+                                  style={[
+                                    styles.emotionFill,
+                                    { width: `${value * 100}%`, backgroundColor: colors.primary },
+                                  ]}
+                                />
+                              </View>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    ) : (
+                      <Text style={[styles.emptyTagsText, { color: colors.muted }]}>
+                        感情分析がありません
+                      </Text>
+                    )}
+                  </View>
                 </>
               ) : (
                 <View style={styles.emptyTab}>
@@ -1275,5 +1412,54 @@ const styles = StyleSheet.create({
   },
   keywordFrequency: {
     fontSize: 11,
+  },
+  sentimentContainer: {
+    gap: 12,
+  },
+  sentimentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  sentimentBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    gap: 6,
+  },
+  sentimentLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  sentimentScore: {
+    fontSize: 12,
+  },
+  sentimentSummary: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  emotionsGrid: {
+    gap: 8,
+  },
+  emotionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  emotionLabel: {
+    fontSize: 12,
+    width: 40,
+  },
+  emotionBar: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  emotionFill: {
+    height: "100%",
+    borderRadius: 4,
   },
 });
