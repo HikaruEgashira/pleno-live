@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Text,
   View,
@@ -7,296 +7,22 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Platform,
-  Animated as RNAnimated,
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { Swipeable } from "react-native-gesture-handler";
 
 import { ScreenContainer } from "@/packages/components/screen-container";
+import { RecordingCard } from "@/packages/components/recording-card";
 import { Haptics, Storage } from "@/packages/platform";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
+import { Input } from "@/packages/components/ui/input";
+import { Badge } from "@/packages/components/ui/badge";
+import { Button } from "@/packages/components/ui/button";
 import { useRecordings } from "@/packages/lib/recordings-context";
 import { useColors } from "@/packages/hooks/use-colors";
 import { useResponsive } from "@/packages/hooks/use-responsive";
 import { Recording } from "@/packages/types/recording";
 import { useTranslation } from "@/packages/lib/i18n/context";
-
-function formatDuration(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-}
-
-function formatDate(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (days === 0) {
-    return date.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
-  } else if (days === 1) {
-    return "昨日";
-  } else if (days < 7) {
-    return `${days}日前`;
-  } else {
-    return date.toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
-  }
-}
-
-function getStatusLabel(status: Recording["status"]): { text: string; color: string } {
-  switch (status) {
-    case "recording":
-      return { text: "録音中", color: "recording" };
-    case "saved":
-      return { text: "保存済み", color: "muted" };
-    case "transcribing":
-      return { text: "文字起こし中", color: "warning" };
-    case "transcribed":
-      return { text: "文字起こし完了", color: "success" };
-    case "summarizing":
-      return { text: "要約中", color: "warning" };
-    case "summarized":
-      return { text: "要約完了", color: "primary" };
-    default:
-      return { text: "", color: "muted" };
-  }
-}
-
-interface RecordingCardProps {
-  recording: Recording;
-  onPress: () => void;
-  onDelete: () => void;
-  columns: number;
-  isSelectMode?: boolean;
-  isSelected?: boolean;
-  onToggleSelection?: () => void;
-}
-
-const RecordingCard = React.memo(function RecordingCard({
-  recording,
-  onPress,
-  onDelete,
-  columns,
-  isSelectMode = false,
-  isSelected = false,
-  onToggleSelection,
-}: RecordingCardProps) {
-  const colors = useColors();
-  const statusInfo = getStatusLabel(recording.status);
-  const swipeableRef = useRef<Swipeable>(null);
-
-  const handleLongPress = useCallback(() => {
-    if (isSelectMode) return;
-    Haptics.impact('medium');
-    Alert.alert("削除確認", `「${recording.title}」を削除しますか？`, [
-      { text: "キャンセル", style: "cancel" },
-      { text: "削除", style: "destructive", onPress: onDelete },
-    ]);
-  }, [recording.title, onDelete, isSelectMode]);
-
-  const handlePress = useCallback(() => {
-    if (isSelectMode && onToggleSelection) {
-      Haptics.impact('light');
-      onToggleSelection();
-    } else {
-      onPress();
-    }
-  }, [isSelectMode, onToggleSelection, onPress]);
-
-  const handleDelete = useCallback(() => {
-    Haptics.impact('medium');
-    Alert.alert("削除確認", `「${recording.title}」を削除しますか？`, [
-      { text: "キャンセル", style: "cancel", onPress: () => swipeableRef.current?.close() },
-      { text: "削除", style: "destructive", onPress: onDelete },
-    ]);
-  }, [recording.title, onDelete]);
-
-  const renderRightActions = (
-    progress: RNAnimated.AnimatedInterpolation<number>,
-    dragX: RNAnimated.AnimatedInterpolation<number>
-  ) => {
-    const translateX = dragX.interpolate({
-      inputRange: [-80, 0],
-      outputRange: [0, 80],
-      extrapolate: "clamp",
-    });
-
-    const opacity = progress.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1],
-    });
-
-    return (
-      <RNAnimated.View
-        style={[
-          styles.deleteAction,
-          {
-            opacity,
-            transform: [{ translateX }],
-          },
-        ]}
-      >
-        <TouchableOpacity
-          style={[styles.deleteButton, { backgroundColor: colors.error }]}
-          onPress={handleDelete}
-          activeOpacity={0.8}
-        >
-          <IconSymbol name="trash.fill" size={22} color="#FFFFFF" />
-          <Text style={styles.deleteText}>削除</Text>
-        </TouchableOpacity>
-      </RNAnimated.View>
-    );
-  };
-
-  const cardContent = (
-    <TouchableOpacity
-      onPress={handlePress}
-      onLongPress={handleLongPress}
-      activeOpacity={0.7}
-      style={[
-        styles.card,
-        {
-          backgroundColor: isSelected ? colors.primary + "10" : colors.surface,
-          borderColor: isSelected ? colors.primary : colors.border,
-          flex: columns > 1 ? 1 : undefined,
-          width: columns > 1 ? undefined : "100%",
-        },
-      ]}
-    >
-      <View style={styles.cardHeader}>
-        {isSelectMode && (
-          <View style={[
-            styles.checkbox,
-            {
-              backgroundColor: isSelected ? colors.primary : "transparent",
-              borderColor: isSelected ? colors.primary : colors.muted,
-            }
-          ]}>
-            {isSelected && (
-              <IconSymbol name="checkmark" size={14} color="#FFFFFF" />
-            )}
-          </View>
-        )}
-        <Text style={[styles.cardTitle, { color: colors.foreground }, isSelectMode && styles.cardTitleWithCheckbox]} numberOfLines={1}>
-          {recording.title}
-        </Text>
-        <View style={[styles.statusBadge, { backgroundColor: colors[statusInfo.color as keyof typeof colors] + "20" }]}>
-          <Text style={[styles.statusText, { color: colors[statusInfo.color as keyof typeof colors] as string }]}>
-            {statusInfo.text}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.cardMeta}>
-        <View style={styles.metaItem}>
-          <IconSymbol name="clock.fill" size={14} color={colors.muted} />
-          <Text style={[styles.metaText, { color: colors.muted }]}>
-            {formatDuration(recording.duration)}
-          </Text>
-        </View>
-        <Text style={[styles.metaText, { color: colors.muted }]}>
-          {formatDate(recording.createdAt)}
-        </Text>
-      </View>
-
-      {/* Metadata indicators row */}
-      {(recording.highlights.length > 0 || recording.actionItems.length > 0 || recording.keywords.length > 0) && (
-        <View style={styles.metadataRow}>
-          {recording.highlights.length > 0 && (
-            <View style={styles.metadataItem}>
-              <IconSymbol name="star.fill" size={12} color={colors.highlight} />
-              <Text style={[styles.metadataCount, { color: colors.highlight }]}>
-                {recording.highlights.length}
-              </Text>
-            </View>
-          )}
-          {recording.actionItems.length > 0 && (
-            <View style={styles.metadataItem}>
-              <IconSymbol name="checkmark.circle.fill" size={12} color={colors.success} />
-              <Text style={[styles.metadataCount, { color: colors.success }]}>
-                {recording.actionItems.filter(a => !a.completed).length}/{recording.actionItems.length}
-              </Text>
-            </View>
-          )}
-          {recording.keywords.length > 0 && (
-            <View style={styles.metadataItem}>
-              <IconSymbol name="text.word.spacing" size={12} color={colors.primary} />
-              <Text style={[styles.metadataCount, { color: colors.primary }]}>
-                {recording.keywords.length}
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
-
-      {recording.tags.length > 0 && (
-        <View style={styles.tagsRow}>
-          {recording.tags.slice(0, 3).map((tag) => (
-            <View
-              key={tag.id}
-              style={[
-                styles.tagChip,
-                { backgroundColor: tag.color || colors.primary + "20" },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.tagChipText,
-                  { color: tag.color ? "#FFFFFF" : colors.primary },
-                ]}
-              >
-                {tag.name}
-              </Text>
-            </View>
-          ))}
-          {recording.tags.length > 3 && (
-            <Text style={[styles.moreTagsText, { color: colors.muted }]}>
-              +{recording.tags.length - 3}
-            </Text>
-          )}
-        </View>
-      )}
-
-      {recording.transcript && (
-        <Text style={[styles.preview, { color: colors.muted }]} numberOfLines={2}>
-          {recording.transcript.text.substring(0, 100)}...
-        </Text>
-      )}
-    </TouchableOpacity>
-  );
-
-  // Web doesn't support Swipeable well, so use long press only
-  if (Platform.OS === "web") {
-    return cardContent;
-  }
-
-  return (
-    <Swipeable
-      ref={swipeableRef}
-      renderRightActions={renderRightActions}
-      rightThreshold={40}
-      overshootRight={false}
-      friction={2}
-    >
-      {cardContent}
-    </Swipeable>
-  );
-}, (prevProps, nextProps) => {
-  // onPress/onDeleteは毎回新規生成されるので、recordingの実質的な変化のみを比較
-  return (
-    prevProps.recording.id === nextProps.recording.id &&
-    prevProps.recording.status === nextProps.recording.status &&
-    prevProps.recording.title === nextProps.recording.title &&
-    prevProps.recording.duration === nextProps.recording.duration &&
-    prevProps.recording.highlights.length === nextProps.recording.highlights.length &&
-    prevProps.recording.transcript?.text === nextProps.recording.transcript?.text &&
-    prevProps.columns === nextProps.columns &&
-    prevProps.isSelectMode === nextProps.isSelectMode &&
-    prevProps.isSelected === nextProps.isSelected
-  );
-});
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -306,9 +32,7 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "transcribed" | "summarized">("all");
-  const [hasHighlightsFilter, setHasHighlightsFilter] = useState(false);
-  const [hasPendingActionsFilter, setHasPendingActionsFilter] = useState(false);
+  const [selectedTemplateType, setSelectedTemplateType] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "longest" | "shortest">("newest");
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -316,44 +40,6 @@ export default function HomeScreen() {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
-  const [activeSmartFolder, setActiveSmartFolder] = useState<string | null>(null);
-
-  // スマートフォルダの定義
-  const smartFolders = useMemo(() => [
-    {
-      id: "unprocessed",
-      name: "未処理",
-      icon: "clock.fill" as const,
-      filter: (r: Recording) => !r.transcript && !r.summary,
-      color: colors.warning,
-    },
-    {
-      id: "this-week",
-      name: "今週",
-      icon: "calendar" as const,
-      filter: (r: Recording) => {
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return new Date(r.createdAt) >= weekAgo;
-      },
-      color: colors.primary,
-    },
-    {
-      id: "high-priority",
-      name: "重要タスク",
-      icon: "exclamationmark.triangle.fill" as const,
-      filter: (r: Recording) =>
-        r.actionItems.some((a) => a.priority === "high" && !a.completed),
-      color: colors.error,
-    },
-    {
-      id: "positive-sentiment",
-      name: "ポジティブ",
-      icon: "face.smiling" as const,
-      filter: (r: Recording) => r.sentiment?.overallSentiment === "positive",
-      color: colors.success,
-    },
-  ], [colors]);
 
   // 表示モードに基づいてカラム数を計算
   const effectiveColumns = useMemo(() => {
@@ -450,34 +136,14 @@ export default function HomeScreen() {
       );
     }
 
-    // Apply status filter
-    if (filter === "transcribed") {
-      result = result.filter((r) => r.transcript);
-    } else if (filter === "summarized") {
-      result = result.filter((r) => r.summary);
-    }
-
-    // Apply highlights filter
-    if (hasHighlightsFilter) {
-      result = result.filter((r) => r.highlights.length > 0);
-    }
-
-    // Apply pending actions filter
-    if (hasPendingActionsFilter) {
-      result = result.filter((r) => r.actionItems.some((a) => !a.completed));
+    // Apply template type filter
+    if (selectedTemplateType) {
+      result = result.filter((r) => r.summaryTemplateType === selectedTemplateType);
     }
 
     // Apply tag filter
     if (selectedTag) {
       result = result.filter((r) => r.tags.some((t) => t.name === selectedTag));
-    }
-
-    // Apply smart folder filter
-    if (activeSmartFolder) {
-      const folder = smartFolders.find((f) => f.id === activeSmartFolder);
-      if (folder) {
-        result = result.filter(folder.filter);
-      }
     }
 
     // Apply sort
@@ -497,7 +163,7 @@ export default function HomeScreen() {
     });
 
     return result;
-  }, [state.recordings, debouncedSearchQuery, filter, hasHighlightsFilter, hasPendingActionsFilter, selectedTag, activeSmartFolder, smartFolders, sortOrder]);
+  }, [state.recordings, debouncedSearchQuery, selectedTemplateType, selectedTag, sortOrder]);
 
   // コールバックをメモ化してRecordingCardの再レンダリングを防止
   const handleRecordingPress = useCallback((id: string) => {
@@ -604,52 +270,6 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Smart Folders */}
-      <View style={styles.smartFoldersRow}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.smartFoldersContent}
-          fadingEdgeLength={40}
-        >
-          {smartFolders.map((folder) => {
-            const count = state.recordings.filter(folder.filter).length;
-            const isActive = activeSmartFolder === folder.id;
-            return (
-              <TouchableOpacity
-                key={folder.id}
-                onPress={() => {
-                  Haptics.impact("light");
-                  setActiveSmartFolder(isActive ? null : folder.id);
-                }}
-                style={[
-                  styles.smartFolderButton,
-                  {
-                    backgroundColor: isActive ? folder.color + "20" : colors.surface,
-                    borderColor: isActive ? folder.color : colors.border,
-                  },
-                ]}
-              >
-                <IconSymbol name={folder.icon} size={14} color={isActive ? folder.color : colors.muted} />
-                <Text
-                  style={[
-                    styles.smartFolderText,
-                    { color: isActive ? folder.color : colors.muted },
-                  ]}
-                >
-                  {folder.name}
-                </Text>
-                <View style={[styles.smartFolderBadge, { backgroundColor: isActive ? folder.color : colors.muted + "30" }]}>
-                  <Text style={[styles.smartFolderBadgeText, { color: isActive ? "#FFFFFF" : colors.muted }]}>
-                    {count}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-
       <View style={styles.searchWrapper}>
         <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <IconSymbol name="magnifyingglass" size={20} color={colors.muted} />
@@ -707,74 +327,62 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.filterRow}>
-        <View style={styles.filterButtons}>
-          {(["all", "transcribed", "summarized"] as const).map((f) => (
-            <TouchableOpacity
-              key={f}
-              onPress={() => setFilter(f)}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterButtons}
+        >
+          <TouchableOpacity
+            onPress={() => setSelectedTemplateType(null)}
+            style={[
+              styles.filterButton,
+              {
+                backgroundColor: selectedTemplateType === null ? colors.primary : colors.surface,
+                borderColor: selectedTemplateType === null ? colors.primary : colors.border,
+              },
+            ]}
+          >
+            <Text
               style={[
-                styles.filterButton,
-                {
-                  backgroundColor: filter === f ? colors.primary : colors.surface,
-                  borderColor: filter === f ? colors.primary : colors.border,
-                },
+                styles.filterText,
+                { color: selectedTemplateType === null ? "#FFFFFF" : colors.muted },
               ]}
             >
-              <Text
-                style={[
-                  styles.filterText,
-                  { color: filter === f ? "#FFFFFF" : colors.muted },
-                ]}
-              >
-                {f === "all" ? t("notes.allNotes") : f === "transcribed" ? t("notes.transcribed") : t("notes.summarized")}
-              </Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            onPress={() => setHasHighlightsFilter(!hasHighlightsFilter)}
-            style={[
-              styles.filterButton,
-              {
-                backgroundColor: hasHighlightsFilter ? colors.highlight + "20" : colors.surface,
-                borderColor: hasHighlightsFilter ? colors.highlight : colors.border,
-              },
-            ]}
-          >
-            <View style={styles.filterButtonContent}>
-              <IconSymbol name="star.fill" size={12} color={hasHighlightsFilter ? colors.highlight : colors.muted} />
-              <Text
-                style={[
-                  styles.filterText,
-                  { color: hasHighlightsFilter ? colors.highlight : colors.muted },
-                ]}
-              >
-                ハイライト
-              </Text>
-            </View>
+              {t("notes.allNotes")}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setHasPendingActionsFilter(!hasPendingActionsFilter)}
-            style={[
-              styles.filterButton,
-              {
-                backgroundColor: hasPendingActionsFilter ? colors.success + "20" : colors.surface,
-                borderColor: hasPendingActionsFilter ? colors.success : colors.border,
-              },
-            ]}
-          >
-            <View style={styles.filterButtonContent}>
-              <IconSymbol name="checkmark" size={12} color={hasPendingActionsFilter ? colors.success : colors.muted} />
-              <Text
+          {(["general", "meeting", "interview", "lecture"] as const).map((type) => {
+            const labels: Record<string, string> = {
+              general: "一般",
+              meeting: "会議",
+              interview: "インタビュー",
+              lecture: "講義",
+            };
+            const isActive = selectedTemplateType === type;
+            return (
+              <TouchableOpacity
+                key={type}
+                onPress={() => setSelectedTemplateType(isActive ? null : type)}
                 style={[
-                  styles.filterText,
-                  { color: hasPendingActionsFilter ? colors.success : colors.muted },
+                  styles.filterButton,
+                  {
+                    backgroundColor: isActive ? colors.primary : colors.surface,
+                    borderColor: isActive ? colors.primary : colors.border,
+                  },
                 ]}
               >
-                未完了タスク
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+                <Text
+                  style={[
+                    styles.filterText,
+                    { color: isActive ? "#FFFFFF" : colors.muted },
+                  ]}
+                >
+                  {labels[type]}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
         <View style={styles.sortAndViewButtons}>
           <TouchableOpacity
             onPress={() => setViewMode(viewMode === "list" ? "grid" : "list")}
@@ -866,15 +474,17 @@ export default function HomeScreen() {
         key={`grid-${effectiveColumns}`}
         numColumns={effectiveColumns}
         renderItem={({ item }) => (
-          <RecordingCard
-            recording={item}
-            onPress={() => handleRecordingPress(item.id)}
-            onDelete={() => handleDelete(item.id)}
-            columns={effectiveColumns}
-            isSelectMode={isSelectMode}
-            isSelected={selectedIds.has(item.id)}
-            onToggleSelection={() => handleToggleSelection(item.id)}
-          />
+          <View style={effectiveColumns === 1 ? styles.listItem : styles.gridItem}>
+            <RecordingCard
+              recording={item}
+              onPress={() => handleRecordingPress(item.id)}
+              onDelete={() => handleDelete(item.id)}
+              columns={effectiveColumns}
+              isSelectMode={isSelectMode}
+              isSelected={selectedIds.has(item.id)}
+              onToggleSelection={() => handleToggleSelection(item.id)}
+            />
+          </View>
         )}
         contentContainerStyle={[
           styles.listContent,
@@ -960,38 +570,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  smartFoldersRow: {
-    marginBottom: 8,
-  },
-  smartFoldersContent: {
-    paddingHorizontal: 20,
-    gap: 8,
-  },
-  smartFolderButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 6,
-  },
-  smartFolderText: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  smartFolderBadge: {
-    minWidth: 20,
-    height: 18,
-    borderRadius: 9,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 6,
-  },
-  smartFolderBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-  },
   searchWrapper: {
     position: "relative",
     marginHorizontal: 20,
@@ -1002,7 +580,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     gap: 8,
   },
@@ -1012,7 +590,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     marginTop: 4,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     paddingVertical: 8,
   },
@@ -1101,11 +679,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
   },
-  filterButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
   filterText: {
     fontSize: 13,
     fontWeight: "500",
@@ -1115,86 +688,17 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
     flexGrow: 1,
   },
-  listContentDesktop: {
-    maxWidth: 1400,
-    alignSelf: "center",
+  listContentDesktop: {},
+  listItem: {
     width: "100%",
-    paddingHorizontal: 40,
+  },
+  gridItem: {
+    flex: 1,
+    minWidth: 280,
+    maxWidth: "100%",
   },
   columnWrapper: {
-    justifyContent: "flex-start",
     gap: 12,
-  },
-  card: {
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  cardTitle: {
-    fontSize: 17,
-    fontWeight: "600",
-    flex: 1,
-    marginRight: 8,
-  },
-  cardTitleWithCheckbox: {
-    marginLeft: 8,
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  cardMeta: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  metaText: {
-    fontSize: 13,
-  },
-  metadataRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginTop: 8,
-  },
-  metadataItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  metadataCount: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  preview: {
-    fontSize: 13,
-    marginTop: 8,
-    lineHeight: 18,
   },
   emptyState: {
     flex: 1,
@@ -1212,24 +716,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 8,
     lineHeight: 20,
-  },
-  deleteAction: {
-    justifyContent: "center",
-    alignItems: "flex-end",
-    marginBottom: 12,
-  },
-  deleteButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 80,
-    height: "100%",
-    borderRadius: 16,
-    gap: 4,
-  },
-  deleteText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "600",
   },
   tagFilterRow: {
     paddingBottom: 8,
@@ -1250,25 +736,6 @@ const styles = StyleSheet.create({
   tagFilterText: {
     fontSize: 13,
     fontWeight: "500",
-  },
-  tagsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginTop: 8,
-  },
-  tagChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  tagChipText: {
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  moreTagsText: {
-    fontSize: 11,
-    alignSelf: "center",
   },
   batchActionBar: {
     position: "absolute",

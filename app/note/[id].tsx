@@ -1851,7 +1851,7 @@ const styles = StyleSheet.create({
   },
   waveform: {
     height: 100,
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
     justifyContent: "center",
   },
@@ -1921,7 +1921,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 8,
     gap: 8,
   },
   highlightTime: {
@@ -1959,7 +1959,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 6,
     borderWidth: 1,
     gap: 8,
     marginTop: 16,
@@ -2089,7 +2089,7 @@ const styles = StyleSheet.create({
   qaMessage: {
     maxWidth: "80%",
     padding: 12,
-    borderRadius: 16,
+    borderRadius: 12,
   },
   qaMessageText: {
     fontSize: 15,

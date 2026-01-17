@@ -63,7 +63,7 @@ export function GlobalRecordingBar() {
             />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={stopRecording} style={styles.stopButton}>
+          <TouchableOpacity onPress={stopRecording} style={[styles.stopButton, { backgroundColor: colors.error }]}>
             <IconSymbol name="stop.fill" size={16} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
@@ -113,7 +113,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 6,
-    backgroundColor: '#EF4444',
     alignItems: 'center',
     justifyContent: 'center',
   },
