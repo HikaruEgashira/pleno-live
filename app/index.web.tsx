@@ -5,6 +5,15 @@ import { Mic, Zap, Shield, Github } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/packages/lib/cn";
 
+// Hook to detect client-side mount for hydration-safe animations
+function useIsClient() {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  return isClient;
+}
+
 function ElegantShape({
   className,
   delay = 0,
@@ -164,6 +173,7 @@ const features = [
 ];
 
 function VoiceMemoLanding() {
+  const isClient = useIsClient();
   const [isRecording, setIsRecording] = useState(false);
 
   const fadeUpVariants = {
@@ -191,34 +201,37 @@ function VoiceMemoLanding() {
     <div className="relative min-h-screen w-full bg-background overflow-y-auto" style={{ height: '100vh' }}>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/3 pointer-events-none" />
 
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <ElegantShape
-          delay={0.3}
-          width={500}
-          height={120}
-          rotate={12}
-          gradient="from-indigo-500/[0.08]"
-          className="left-[-10%] top-[15%]"
-        />
+      {/* Only render animated shapes on client to avoid hydration mismatch */}
+      {isClient && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <ElegantShape
+            delay={0.3}
+            width={500}
+            height={120}
+            rotate={12}
+            gradient="from-indigo-500/[0.08]"
+            className="left-[-10%] top-[15%]"
+          />
 
-        <ElegantShape
-          delay={0.5}
-          width={400}
-          height={100}
-          rotate={-15}
-          gradient="from-indigo-500/[0.08]"
-          className="right-[-5%] top-[70%]"
-        />
+          <ElegantShape
+            delay={0.5}
+            width={400}
+            height={100}
+            rotate={-15}
+            gradient="from-indigo-500/[0.08]"
+            className="right-[-5%] top-[70%]"
+          />
 
-        <ElegantShape
-          delay={0.4}
-          width={250}
-          height={70}
-          rotate={-8}
-          gradient="from-indigo-500/[0.08]"
-          className="left-[10%] bottom-[10%]"
-        />
-      </div>
+          <ElegantShape
+            delay={0.4}
+            width={250}
+            height={70}
+            rotate={-8}
+            gradient="from-indigo-500/[0.08]"
+            className="left-[10%] bottom-[10%]"
+          />
+        </div>
+      )}
 
       <div className="relative z-10">
         {/* Header */}
@@ -264,8 +277,8 @@ function VoiceMemoLanding() {
               <motion.div
                 custom={0}
                 variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
+                initial={isClient ? "hidden" : false}
+                animate={isClient ? "visible" : false}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-primary/10 mb-8"
               >
                 <div className="h-2 w-2 rounded-full bg-primary" />
@@ -277,8 +290,8 @@ function VoiceMemoLanding() {
               <motion.h1
                 custom={1}
                 variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
+                initial={isClient ? "hidden" : false}
+                animate={isClient ? "visible" : false}
                 className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 tracking-tight text-foreground"
               >
                 Turn Voice into{" "}
@@ -288,8 +301,8 @@ function VoiceMemoLanding() {
               <motion.p
                 custom={2}
                 variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
+                initial={isClient ? "hidden" : false}
+                animate={isClient ? "visible" : false}
                 className="text-lg md:text-xl text-muted mb-10 max-w-2xl mx-auto leading-relaxed"
               >
                 ボイスメモをAIで瞬時にテキスト化。
@@ -299,8 +312,8 @@ function VoiceMemoLanding() {
               <motion.div
                 custom={3}
                 variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
+                initial={isClient ? "hidden" : false}
+                animate={isClient ? "visible" : false}
                 className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
               >
                 <a href="https://github.com/HikaruEgashira/pleno-live/releases">
@@ -316,8 +329,8 @@ function VoiceMemoLanding() {
               <motion.div
                 custom={4}
                 variants={fadeUpVariants}
-                initial="hidden"
-                animate="visible"
+                initial={isClient ? "hidden" : false}
+                animate={isClient ? "visible" : false}
                 className="max-w-2xl mx-auto"
               >
                 <div className="bg-surface border border-border rounded-2xl p-8 shadow-sm">
@@ -364,8 +377,8 @@ function VoiceMemoLanding() {
         <section id="features" className="container mx-auto px-6 py-16 md:py-24">
           <div className="max-w-5xl mx-auto">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={isClient ? { opacity: 0, y: 20 } : false}
+              whileInView={isClient ? { opacity: 1, y: 0 } : undefined}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
               className="text-center mb-12"
@@ -382,8 +395,8 @@ function VoiceMemoLanding() {
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={isClient ? { opacity: 0, y: 20 } : false}
+                  whileInView={isClient ? { opacity: 1, y: 0 } : undefined}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   className="bg-surface border border-border rounded-2xl p-8 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300"
@@ -406,8 +419,8 @@ function VoiceMemoLanding() {
         {/* CTA Section */}
         <section className="container mx-auto px-6 py-16 md:py-24">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={isClient ? { opacity: 0, y: 20 } : false}
+            whileInView={isClient ? { opacity: 1, y: 0 } : undefined}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
             className="max-w-3xl mx-auto text-center"
