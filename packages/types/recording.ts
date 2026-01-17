@@ -122,6 +122,7 @@ export interface Recording {
   notes: string;
   transcript?: Transcript;
   summary?: Summary;
+  summaryTemplateType?: TemplateType;
   tags: Tag[];
   actionItems: ActionItem[];
   sentiment?: SentimentAnalysis;

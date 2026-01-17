@@ -32,9 +32,7 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "transcribed" | "summarized">("all");
-  const [hasHighlightsFilter, setHasHighlightsFilter] = useState(false);
-  const [hasPendingActionsFilter, setHasPendingActionsFilter] = useState(false);
+  const [selectedTemplateType, setSelectedTemplateType] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "longest" | "shortest">("newest");
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -42,44 +40,6 @@ export default function HomeScreen() {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
-  const [activeSmartFolder, setActiveSmartFolder] = useState<string | null>(null);
-
-  // スマートフォルダの定義
-  const smartFolders = useMemo(() => [
-    {
-      id: "unprocessed",
-      name: "未処理",
-      icon: "clock.fill" as const,
-      filter: (r: Recording) => !r.transcript && !r.summary,
-      color: colors.warning,
-    },
-    {
-      id: "this-week",
-      name: "今週",
-      icon: "calendar" as const,
-      filter: (r: Recording) => {
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return new Date(r.createdAt) >= weekAgo;
-      },
-      color: colors.primary,
-    },
-    {
-      id: "high-priority",
-      name: "重要タスク",
-      icon: "exclamationmark.triangle.fill" as const,
-      filter: (r: Recording) =>
-        r.actionItems.some((a) => a.priority === "high" && !a.completed),
-      color: colors.error,
-    },
-    {
-      id: "positive-sentiment",
-      name: "ポジティブ",
-      icon: "face.smiling" as const,
-      filter: (r: Recording) => r.sentiment?.overallSentiment === "positive",
-      color: colors.success,
-    },
-  ], [colors]);
 
   // 表示モードに基づいてカラム数を計算
   const effectiveColumns = useMemo(() => {
@@ -176,34 +136,14 @@ export default function HomeScreen() {
       );
     }
 
-    // Apply status filter
-    if (filter === "transcribed") {
-      result = result.filter((r) => r.transcript);
-    } else if (filter === "summarized") {
-      result = result.filter((r) => r.summary);
-    }
-
-    // Apply highlights filter
-    if (hasHighlightsFilter) {
-      result = result.filter((r) => r.highlights.length > 0);
-    }
-
-    // Apply pending actions filter
-    if (hasPendingActionsFilter) {
-      result = result.filter((r) => r.actionItems.some((a) => !a.completed));
+    // Apply template type filter
+    if (selectedTemplateType) {
+      result = result.filter((r) => r.summaryTemplateType === selectedTemplateType);
     }
 
     // Apply tag filter
     if (selectedTag) {
       result = result.filter((r) => r.tags.some((t) => t.name === selectedTag));
-    }
-
-    // Apply smart folder filter
-    if (activeSmartFolder) {
-      const folder = smartFolders.find((f) => f.id === activeSmartFolder);
-      if (folder) {
-        result = result.filter(folder.filter);
-      }
     }
 
     // Apply sort
@@ -223,7 +163,7 @@ export default function HomeScreen() {
     });
 
     return result;
-  }, [state.recordings, debouncedSearchQuery, filter, hasHighlightsFilter, hasPendingActionsFilter, selectedTag, activeSmartFolder, smartFolders, sortOrder]);
+  }, [state.recordings, debouncedSearchQuery, selectedTemplateType, selectedTag, sortOrder]);
 
   // コールバックをメモ化してRecordingCardの再レンダリングを防止
   const handleRecordingPress = useCallback((id: string) => {
@@ -330,52 +270,6 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Smart Folders */}
-      <View style={styles.smartFoldersRow}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.smartFoldersContent}
-          fadingEdgeLength={40}
-        >
-          {smartFolders.map((folder) => {
-            const count = state.recordings.filter(folder.filter).length;
-            const isActive = activeSmartFolder === folder.id;
-            return (
-              <TouchableOpacity
-                key={folder.id}
-                onPress={() => {
-                  Haptics.impact("light");
-                  setActiveSmartFolder(isActive ? null : folder.id);
-                }}
-                style={[
-                  styles.smartFolderButton,
-                  {
-                    backgroundColor: isActive ? folder.color + "20" : colors.surface,
-                    borderColor: isActive ? folder.color : colors.border,
-                  },
-                ]}
-              >
-                <IconSymbol name={folder.icon} size={14} color={isActive ? folder.color : colors.muted} />
-                <Text
-                  style={[
-                    styles.smartFolderText,
-                    { color: isActive ? folder.color : colors.muted },
-                  ]}
-                >
-                  {folder.name}
-                </Text>
-                <View style={[styles.smartFolderBadge, { backgroundColor: isActive ? folder.color : colors.muted + "30" }]}>
-                  <Text style={[styles.smartFolderBadgeText, { color: isActive ? "#FFFFFF" : colors.muted }]}>
-                    {count}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-
       <View style={styles.searchWrapper}>
         <View style={[styles.searchContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <IconSymbol name="magnifyingglass" size={20} color={colors.muted} />
@@ -433,74 +327,62 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.filterRow}>
-        <View style={styles.filterButtons}>
-          {(["all", "transcribed", "summarized"] as const).map((f) => (
-            <TouchableOpacity
-              key={f}
-              onPress={() => setFilter(f)}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterButtons}
+        >
+          <TouchableOpacity
+            onPress={() => setSelectedTemplateType(null)}
+            style={[
+              styles.filterButton,
+              {
+                backgroundColor: selectedTemplateType === null ? colors.primary : colors.surface,
+                borderColor: selectedTemplateType === null ? colors.primary : colors.border,
+              },
+            ]}
+          >
+            <Text
               style={[
-                styles.filterButton,
-                {
-                  backgroundColor: filter === f ? colors.primary : colors.surface,
-                  borderColor: filter === f ? colors.primary : colors.border,
-                },
+                styles.filterText,
+                { color: selectedTemplateType === null ? "#FFFFFF" : colors.muted },
               ]}
             >
-              <Text
-                style={[
-                  styles.filterText,
-                  { color: filter === f ? "#FFFFFF" : colors.muted },
-                ]}
-              >
-                {f === "all" ? t("notes.allNotes") : f === "transcribed" ? t("notes.transcribed") : t("notes.summarized")}
-              </Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            onPress={() => setHasHighlightsFilter(!hasHighlightsFilter)}
-            style={[
-              styles.filterButton,
-              {
-                backgroundColor: hasHighlightsFilter ? colors.highlight + "20" : colors.surface,
-                borderColor: hasHighlightsFilter ? colors.highlight : colors.border,
-              },
-            ]}
-          >
-            <View style={styles.filterButtonContent}>
-              <IconSymbol name="star.fill" size={12} color={hasHighlightsFilter ? colors.highlight : colors.muted} />
-              <Text
-                style={[
-                  styles.filterText,
-                  { color: hasHighlightsFilter ? colors.highlight : colors.muted },
-                ]}
-              >
-                ハイライト
-              </Text>
-            </View>
+              {t("notes.allNotes")}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setHasPendingActionsFilter(!hasPendingActionsFilter)}
-            style={[
-              styles.filterButton,
-              {
-                backgroundColor: hasPendingActionsFilter ? colors.success + "20" : colors.surface,
-                borderColor: hasPendingActionsFilter ? colors.success : colors.border,
-              },
-            ]}
-          >
-            <View style={styles.filterButtonContent}>
-              <IconSymbol name="checkmark" size={12} color={hasPendingActionsFilter ? colors.success : colors.muted} />
-              <Text
+          {(["general", "meeting", "interview", "lecture"] as const).map((type) => {
+            const labels: Record<string, string> = {
+              general: "一般",
+              meeting: "会議",
+              interview: "インタビュー",
+              lecture: "講義",
+            };
+            const isActive = selectedTemplateType === type;
+            return (
+              <TouchableOpacity
+                key={type}
+                onPress={() => setSelectedTemplateType(isActive ? null : type)}
                 style={[
-                  styles.filterText,
-                  { color: hasPendingActionsFilter ? colors.success : colors.muted },
+                  styles.filterButton,
+                  {
+                    backgroundColor: isActive ? colors.primary : colors.surface,
+                    borderColor: isActive ? colors.primary : colors.border,
+                  },
                 ]}
               >
-                未完了タスク
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+                <Text
+                  style={[
+                    styles.filterText,
+                    { color: isActive ? "#FFFFFF" : colors.muted },
+                  ]}
+                >
+                  {labels[type]}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
         <View style={styles.sortAndViewButtons}>
           <TouchableOpacity
             onPress={() => setViewMode(viewMode === "list" ? "grid" : "list")}
@@ -688,38 +570,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  smartFoldersRow: {
-    marginBottom: 8,
-  },
-  smartFoldersContent: {
-    paddingHorizontal: 20,
-    gap: 8,
-  },
-  smartFolderButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 6,
-  },
-  smartFolderText: {
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  smartFolderBadge: {
-    minWidth: 20,
-    height: 18,
-    borderRadius: 9,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 6,
-  },
-  smartFolderBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-  },
   searchWrapper: {
     position: "relative",
     marginHorizontal: 20,
@@ -829,11 +679,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
   },
-  filterButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
   filterText: {
     fontSize: 13,
     fontWeight: "500",
@@ -847,7 +692,6 @@ const styles = StyleSheet.create({
     maxWidth: 1400,
     alignSelf: "center",
     width: "100%",
-    paddingHorizontal: 40,
   },
   listItem: {
     width: "100%",
