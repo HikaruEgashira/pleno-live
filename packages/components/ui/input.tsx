@@ -28,7 +28,7 @@ export function Input({
   };
 
   return (
-    <View style={styles.container}>
+    <View>
       {label && (
         <Text style={[styles.label, { color: colors.foreground }]}>
           {label}
@@ -69,7 +69,6 @@ export function Input({
 }
 
 const styles = StyleSheet.create({
-  container: {},
   label: {
     fontSize: 14,
     fontWeight: "500",
@@ -86,7 +85,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     paddingVertical: 10,
-    padding: 0,
   },
   inputWithLeftIcon: {
     marginLeft: 8,

@@ -67,7 +67,7 @@ interface CardContentProps {
 
 export function CardContent({ children, style }: CardContentProps) {
   return (
-    <View style={[styles.content, style]}>
+    <View style={style}>
       {children}
     </View>
   );
@@ -96,7 +96,6 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 12,
   },
-  content: {},
   footer: {
     marginTop: 12,
     paddingTop: 12,

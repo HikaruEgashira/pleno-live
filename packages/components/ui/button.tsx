@@ -40,8 +40,6 @@ export function Button({
         return "transparent";
       case "destructive":
         return colors.error;
-      default:
-        return colors.primary;
     }
   };
 
