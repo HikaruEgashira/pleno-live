@@ -68,11 +68,17 @@ export default function RootLayout() {
   // ウェブでもAppProvidersを常に使用（tRPCコンテキストが必要なため）
   const isWebLanding = false;
 
-  const initialInsets = initialWindowMetrics?.insets ?? DEFAULT_WEB_INSETS;
-  const initialFrame = initialWindowMetrics?.frame ?? DEFAULT_WEB_FRAME;
+  // Use fixed initial values to avoid hydration mismatch (SSR vs client)
+  const [insets, setInsets] = useState<EdgeInsets>(DEFAULT_WEB_INSETS);
+  const [frame, setFrame] = useState<Rect>(DEFAULT_WEB_FRAME);
 
-  const [insets, setInsets] = useState<EdgeInsets>(initialInsets);
-  const [frame, setFrame] = useState<Rect>(initialFrame);
+  // Apply actual metrics after mount
+  useEffect(() => {
+    if (initialWindowMetrics) {
+      setInsets(initialWindowMetrics.insets);
+      setFrame(initialWindowMetrics.frame);
+    }
+  }, []);
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
@@ -92,18 +98,17 @@ export default function RootLayout() {
     return () => unsubscribe();
   }, [handleSafeAreaUpdate, isWebLanding]);
 
-  // Ensure minimum 8px padding for top and bottom on mobile
+  // Ensure minimum padding for top and bottom - use fixed values to avoid hydration mismatch
   const providerInitialMetrics = useMemo(() => {
-    const metrics = initialWindowMetrics ?? { insets: initialInsets, frame: initialFrame };
     return {
-      ...metrics,
       insets: {
-        ...metrics.insets,
-        top: Math.max(metrics.insets.top, 16),
-        bottom: Math.max(metrics.insets.bottom, 12),
+        ...DEFAULT_WEB_INSETS,
+        top: Math.max(insets.top, 16),
+        bottom: Math.max(insets.bottom, 12),
       },
+      frame,
     };
-  }, [initialInsets, initialFrame]);
+  }, [insets, frame]);
 
   const stack = (
     <Stack screenOptions={{ headerShown: false }}>
