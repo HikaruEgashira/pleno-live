@@ -152,11 +152,7 @@ export const RecordingCard = React.memo(function RecordingCard({
       onPress={handlePress}
       onLongPress={handleLongPress}
       selected={isSelected}
-      style={{
-        ...styles.card,
-        flex: columns > 1 ? 1 : undefined,
-        width: columns > 1 ? undefined : "100%",
-      }}
+      style={styles.card}
     >
       <View style={styles.cardHeader}>
         {isSelectMode && (

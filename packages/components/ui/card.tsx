@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, StyleSheet, ViewStyle } from "react-native";
+import { View, TouchableOpacity, StyleSheet, ViewStyle, StyleProp } from "react-native";
 import { useColors } from "@/packages/hooks/use-colors";
 
 type CardVariant = "default" | "interactive";
@@ -8,7 +8,7 @@ interface CardProps {
   variant?: CardVariant;
   onPress?: () => void;
   onLongPress?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   selected?: boolean;
 }
 

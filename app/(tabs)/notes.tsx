@@ -592,15 +592,17 @@ export default function HomeScreen() {
         key={`grid-${effectiveColumns}`}
         numColumns={effectiveColumns}
         renderItem={({ item }) => (
-          <RecordingCard
-            recording={item}
-            onPress={() => handleRecordingPress(item.id)}
-            onDelete={() => handleDelete(item.id)}
-            columns={effectiveColumns}
-            isSelectMode={isSelectMode}
-            isSelected={selectedIds.has(item.id)}
-            onToggleSelection={() => handleToggleSelection(item.id)}
-          />
+          <View style={effectiveColumns === 1 ? styles.listItem : styles.gridItem}>
+            <RecordingCard
+              recording={item}
+              onPress={() => handleRecordingPress(item.id)}
+              onDelete={() => handleDelete(item.id)}
+              columns={effectiveColumns}
+              isSelectMode={isSelectMode}
+              isSelected={selectedIds.has(item.id)}
+              onToggleSelection={() => handleToggleSelection(item.id)}
+            />
+          </View>
         )}
         contentContainerStyle={[
           styles.listContent,
@@ -847,8 +849,15 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 40,
   },
+  listItem: {
+    width: "100%",
+  },
+  gridItem: {
+    flex: 1,
+    minWidth: 280,
+    maxWidth: "100%",
+  },
   columnWrapper: {
-    justifyContent: "flex-start",
     gap: 12,
   },
   emptyState: {
