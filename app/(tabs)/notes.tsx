@@ -612,6 +612,7 @@ export default function HomeScreen() {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.smartFoldersContent}
+          fadingEdgeLength={40}
         >
           {smartFolders.map((folder) => {
             const count = state.recordings.filter(folder.filter).length;
@@ -1062,6 +1063,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     justifyContent: "space-between",
     alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
   },
   filterButtons: {
     flexDirection: "row",

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Platform,
   KeyboardAvoidingView,
+  Animated,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAudioPlayer, setAudioModeAsync } from "expo-audio";
@@ -18,6 +19,7 @@ import { Haptics, FileSystem } from "@/packages/platform";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
 import { useRecordings } from "@/packages/lib/recordings-context";
 import { useColors } from "@/packages/hooks/use-colors";
+import { useResponsive } from "@/packages/hooks/use-responsive";
 import { useSettings } from "@/packages/lib/settings-context";
 import { QAMessage } from "@/packages/types/recording";
 import { trpc } from "@/packages/lib/trpc";
@@ -69,6 +71,8 @@ export default function NoteDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const colors = useColors();
+  const { width: screenWidth } = useResponsive();
+  const waveformBarCount = Math.floor((screenWidth - 72) / 8);
   const { getRecording, updateRecording, setTranscript, setSummary, addQAMessage, addHighlight } = useRecordings();
   const { settings } = useSettings();
 
@@ -85,6 +89,7 @@ export default function NoteDetailScreen() {
   const [editedNotes, setEditedNotes] = useState("");
   const [highlightedKeyword, setHighlightedKeyword] = useState<string | null>(null);
   const [playbackRate, setPlaybackRate] = useState(1.0);
+  const playbackRateScale = useRef(new Animated.Value(1)).current;
 
   const recording = getRecording(id || "");
   const player = useAudioPlayer(recording?.audioUri || "");
@@ -243,7 +248,20 @@ export default function NoteDetailScreen() {
       player.playbackRate = newRate;
     }
     Haptics.impact('light');
-  }, [playbackRate, player]);
+    // Scale animation for visual feedback
+    Animated.sequence([
+      Animated.timing(playbackRateScale, {
+        toValue: 1.15,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(playbackRateScale, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [playbackRate, player, playbackRateScale]);
 
   const handleTranscribe = async () => {
     if (!recording) return;
@@ -774,6 +792,7 @@ const handleSummarize = async () => {
     <ScreenContainer edges={["top", "bottom", "left", "right"]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
         style={{ flex: 1 }}
       >
         {/* Header */}
@@ -862,7 +881,7 @@ const handleSummarize = async () => {
               {/* Waveform */}
               <View style={[styles.waveform, { backgroundColor: colors.surface }]}>
                 <View style={styles.waveformBars}>
-                  {Array.from({ length: 40 }).map((_, i) => {
+                  {Array.from({ length: waveformBarCount }).map((_, i) => {
                     const waveformValue = recording.waveformData?.[i] ?? 0.1;
                     return (
                       <View
@@ -871,7 +890,7 @@ const handleSummarize = async () => {
                           styles.waveformBar,
                           {
                             backgroundColor:
-                              i / 40 < currentTime / recording.duration
+                              i / waveformBarCount < currentTime / recording.duration
                                 ? colors.primary
                                 : colors.border,
                             height: 20 + waveformValue * 40,
@@ -922,14 +941,16 @@ const handleSummarize = async () => {
               </View>
 
               {/* Playback Speed Control */}
-              <TouchableOpacity
-                onPress={handlePlaybackRateChange}
-                style={[styles.playbackRateButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              >
-                <Text style={[styles.playbackRateText, { color: colors.foreground }]}>
-                  {playbackRate}x
-                </Text>
-              </TouchableOpacity>
+              <Animated.View style={{ transform: [{ scale: playbackRateScale }] }}>
+                <TouchableOpacity
+                  onPress={handlePlaybackRateChange}
+                  style={[styles.playbackRateButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                >
+                  <Text style={[styles.playbackRateText, { color: colors.foreground }]}>
+                    {playbackRate}x
+                  </Text>
+                </TouchableOpacity>
+              </Animated.View>
 
               {/* Add Highlight Button */}
               <TouchableOpacity
@@ -1045,11 +1066,14 @@ const handleSummarize = async () => {
                           disabled={translateMutation.isPending || isProcessing}
                           style={[
                             styles.translateButton,
-                            { backgroundColor: colors.primary, opacity: translateMutation.isPending ? 0.6 : 1 }
+                            { backgroundColor: translateMutation.isPending ? colors.muted : colors.primary }
                           ]}
                         >
                           {translateMutation.isPending ? (
-                            <ActivityIndicator color="#FFFFFF" size="small" />
+                            <>
+                              <ActivityIndicator color="#FFFFFF" size="small" />
+                              <Text style={styles.translateButtonText}>翻訳中...</Text>
+                            </>
                           ) : (
                             <>
                               <IconSymbol name="doc.text.fill" size={16} color="#FFFFFF" />
@@ -1796,7 +1820,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
+    paddingVertical: 16,
+    minHeight: 44,
     gap: 6,
   },
   tabLabel: {
@@ -1911,7 +1936,11 @@ const styles = StyleSheet.create({
     marginLeft: 24,
   },
   highlightDeleteButton: {
-    padding: 6,
+    padding: 10,
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
   addHighlightButton: {
     flexDirection: "row",
@@ -2269,7 +2298,8 @@ const styles = StyleSheet.create({
   },
   emotionLabel: {
     fontSize: 12,
-    width: 40,
+    minWidth: 40,
+    flexShrink: 0,
   },
   emotionBar: {
     flex: 1,
