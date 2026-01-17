@@ -22,7 +22,7 @@ function RecordControlsDemo({ isRecording, isPaused, duration, realtimeEnabled, 
   const colors = useColors();
   const pulseAnim = new Animated.Value(1);
   const { width } = useWindowDimensions();
-  const waveformBarCount = Math.floor((width - 72) / 8);
+  const waveformBarCount = Math.floor((width - 72) / 16);
 
   return (
     <View style={styles.container}>
