@@ -56,6 +56,9 @@ const preview: Preview = {
         date: /Date$/,
       },
     },
+    // Mobile-first: panel on right side
+    layout: "fullscreen",
+    panelPosition: "right",
   },
 };
 

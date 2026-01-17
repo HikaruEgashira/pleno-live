@@ -29,6 +29,9 @@ const storage = Platform.OS === "web" ? webStorage : getNativeStorage();
 
 const StorybookUIRoot = view.getStorybookUI({
   storage,
+  // Mobile-first: controls on right panel instead of bottom
+  onDeviceUI: true,
+  shouldPersistSelection: true,
 });
 
 export default StorybookUIRoot;
