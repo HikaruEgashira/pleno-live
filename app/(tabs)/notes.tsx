@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Text,
   View,
@@ -7,296 +7,22 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Platform,
-  Animated as RNAnimated,
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { Swipeable } from "react-native-gesture-handler";
 
 import { ScreenContainer } from "@/packages/components/screen-container";
+import { RecordingCard } from "@/packages/components/recording-card";
 import { Haptics, Storage } from "@/packages/platform";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
+import { Input } from "@/packages/components/ui/input";
+import { Badge } from "@/packages/components/ui/badge";
+import { Button } from "@/packages/components/ui/button";
 import { useRecordings } from "@/packages/lib/recordings-context";
 import { useColors } from "@/packages/hooks/use-colors";
 import { useResponsive } from "@/packages/hooks/use-responsive";
 import { Recording } from "@/packages/types/recording";
 import { useTranslation } from "@/packages/lib/i18n/context";
-
-function formatDuration(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-}
-
-function formatDate(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (days === 0) {
-    return date.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
-  } else if (days === 1) {
-    return "昨日";
-  } else if (days < 7) {
-    return `${days}日前`;
-  } else {
-    return date.toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
-  }
-}
-
-function getStatusLabel(status: Recording["status"]): { text: string; color: string } {
-  switch (status) {
-    case "recording":
-      return { text: "録音中", color: "recording" };
-    case "saved":
-      return { text: "保存済み", color: "muted" };
-    case "transcribing":
-      return { text: "文字起こし中", color: "warning" };
-    case "transcribed":
-      return { text: "文字起こし完了", color: "success" };
-    case "summarizing":
-      return { text: "要約中", color: "warning" };
-    case "summarized":
-      return { text: "要約完了", color: "primary" };
-    default:
-      return { text: "", color: "muted" };
-  }
-}
-
-interface RecordingCardProps {
-  recording: Recording;
-  onPress: () => void;
-  onDelete: () => void;
-  columns: number;
-  isSelectMode?: boolean;
-  isSelected?: boolean;
-  onToggleSelection?: () => void;
-}
-
-const RecordingCard = React.memo(function RecordingCard({
-  recording,
-  onPress,
-  onDelete,
-  columns,
-  isSelectMode = false,
-  isSelected = false,
-  onToggleSelection,
-}: RecordingCardProps) {
-  const colors = useColors();
-  const statusInfo = getStatusLabel(recording.status);
-  const swipeableRef = useRef<Swipeable>(null);
-
-  const handleLongPress = useCallback(() => {
-    if (isSelectMode) return;
-    Haptics.impact('medium');
-    Alert.alert("削除確認", `「${recording.title}」を削除しますか？`, [
-      { text: "キャンセル", style: "cancel" },
-      { text: "削除", style: "destructive", onPress: onDelete },
-    ]);
-  }, [recording.title, onDelete, isSelectMode]);
-
-  const handlePress = useCallback(() => {
-    if (isSelectMode && onToggleSelection) {
-      Haptics.impact('light');
-      onToggleSelection();
-    } else {
-      onPress();
-    }
-  }, [isSelectMode, onToggleSelection, onPress]);
-
-  const handleDelete = useCallback(() => {
-    Haptics.impact('medium');
-    Alert.alert("削除確認", `「${recording.title}」を削除しますか？`, [
-      { text: "キャンセル", style: "cancel", onPress: () => swipeableRef.current?.close() },
-      { text: "削除", style: "destructive", onPress: onDelete },
-    ]);
-  }, [recording.title, onDelete]);
-
-  const renderRightActions = (
-    progress: RNAnimated.AnimatedInterpolation<number>,
-    dragX: RNAnimated.AnimatedInterpolation<number>
-  ) => {
-    const translateX = dragX.interpolate({
-      inputRange: [-80, 0],
-      outputRange: [0, 80],
-      extrapolate: "clamp",
-    });
-
-    const opacity = progress.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1],
-    });
-
-    return (
-      <RNAnimated.View
-        style={[
-          styles.deleteAction,
-          {
-            opacity,
-            transform: [{ translateX }],
-          },
-        ]}
-      >
-        <TouchableOpacity
-          style={[styles.deleteButton, { backgroundColor: colors.error }]}
-          onPress={handleDelete}
-          activeOpacity={0.8}
-        >
-          <IconSymbol name="trash.fill" size={22} color="#FFFFFF" />
-          <Text style={styles.deleteText}>削除</Text>
-        </TouchableOpacity>
-      </RNAnimated.View>
-    );
-  };
-
-  const cardContent = (
-    <TouchableOpacity
-      onPress={handlePress}
-      onLongPress={handleLongPress}
-      activeOpacity={0.7}
-      style={[
-        styles.card,
-        {
-          backgroundColor: isSelected ? colors.primary + "10" : colors.surface,
-          borderColor: isSelected ? colors.primary : colors.border,
-          flex: columns > 1 ? 1 : undefined,
-          width: columns > 1 ? undefined : "100%",
-        },
-      ]}
-    >
-      <View style={styles.cardHeader}>
-        {isSelectMode && (
-          <View style={[
-            styles.checkbox,
-            {
-              backgroundColor: isSelected ? colors.primary : "transparent",
-              borderColor: isSelected ? colors.primary : colors.muted,
-            }
-          ]}>
-            {isSelected && (
-              <IconSymbol name="checkmark" size={14} color="#FFFFFF" />
-            )}
-          </View>
-        )}
-        <Text style={[styles.cardTitle, { color: colors.foreground }, isSelectMode && styles.cardTitleWithCheckbox]} numberOfLines={1}>
-          {recording.title}
-        </Text>
-        <View style={[styles.statusBadge, { backgroundColor: colors[statusInfo.color as keyof typeof colors] + "20" }]}>
-          <Text style={[styles.statusText, { color: colors[statusInfo.color as keyof typeof colors] as string }]}>
-            {statusInfo.text}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.cardMeta}>
-        <View style={styles.metaItem}>
-          <IconSymbol name="clock.fill" size={14} color={colors.muted} />
-          <Text style={[styles.metaText, { color: colors.muted }]}>
-            {formatDuration(recording.duration)}
-          </Text>
-        </View>
-        <Text style={[styles.metaText, { color: colors.muted }]}>
-          {formatDate(recording.createdAt)}
-        </Text>
-      </View>
-
-      {/* Metadata indicators row */}
-      {(recording.highlights.length > 0 || recording.actionItems.length > 0 || recording.keywords.length > 0) && (
-        <View style={styles.metadataRow}>
-          {recording.highlights.length > 0 && (
-            <View style={styles.metadataItem}>
-              <IconSymbol name="star.fill" size={12} color={colors.highlight} />
-              <Text style={[styles.metadataCount, { color: colors.highlight }]}>
-                {recording.highlights.length}
-              </Text>
-            </View>
-          )}
-          {recording.actionItems.length > 0 && (
-            <View style={styles.metadataItem}>
-              <IconSymbol name="checkmark.circle.fill" size={12} color={colors.success} />
-              <Text style={[styles.metadataCount, { color: colors.success }]}>
-                {recording.actionItems.filter(a => !a.completed).length}/{recording.actionItems.length}
-              </Text>
-            </View>
-          )}
-          {recording.keywords.length > 0 && (
-            <View style={styles.metadataItem}>
-              <IconSymbol name="text.word.spacing" size={12} color={colors.primary} />
-              <Text style={[styles.metadataCount, { color: colors.primary }]}>
-                {recording.keywords.length}
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
-
-      {recording.tags.length > 0 && (
-        <View style={styles.tagsRow}>
-          {recording.tags.slice(0, 3).map((tag) => (
-            <View
-              key={tag.id}
-              style={[
-                styles.tagChip,
-                { backgroundColor: tag.color || colors.primary + "20" },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.tagChipText,
-                  { color: tag.color ? "#FFFFFF" : colors.primary },
-                ]}
-              >
-                {tag.name}
-              </Text>
-            </View>
-          ))}
-          {recording.tags.length > 3 && (
-            <Text style={[styles.moreTagsText, { color: colors.muted }]}>
-              +{recording.tags.length - 3}
-            </Text>
-          )}
-        </View>
-      )}
-
-      {recording.transcript && (
-        <Text style={[styles.preview, { color: colors.muted }]} numberOfLines={2}>
-          {recording.transcript.text.substring(0, 100)}...
-        </Text>
-      )}
-    </TouchableOpacity>
-  );
-
-  // Web doesn't support Swipeable well, so use long press only
-  if (Platform.OS === "web") {
-    return cardContent;
-  }
-
-  return (
-    <Swipeable
-      ref={swipeableRef}
-      renderRightActions={renderRightActions}
-      rightThreshold={40}
-      overshootRight={false}
-      friction={2}
-    >
-      {cardContent}
-    </Swipeable>
-  );
-}, (prevProps, nextProps) => {
-  // onPress/onDeleteは毎回新規生成されるので、recordingの実質的な変化のみを比較
-  return (
-    prevProps.recording.id === nextProps.recording.id &&
-    prevProps.recording.status === nextProps.recording.status &&
-    prevProps.recording.title === nextProps.recording.title &&
-    prevProps.recording.duration === nextProps.recording.duration &&
-    prevProps.recording.highlights.length === nextProps.recording.highlights.length &&
-    prevProps.recording.transcript?.text === nextProps.recording.transcript?.text &&
-    prevProps.columns === nextProps.columns &&
-    prevProps.isSelectMode === nextProps.isSelectMode &&
-    prevProps.isSelected === nextProps.isSelected
-  );
-});
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -1002,7 +728,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     gap: 8,
   },
@@ -1012,7 +738,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     marginTop: 4,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     paddingVertical: 8,
   },
@@ -1125,77 +851,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     gap: 12,
   },
-  card: {
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  cardTitle: {
-    fontSize: 17,
-    fontWeight: "600",
-    flex: 1,
-    marginRight: 8,
-  },
-  cardTitleWithCheckbox: {
-    marginLeft: 8,
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  cardMeta: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  metaText: {
-    fontSize: 13,
-  },
-  metadataRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginTop: 8,
-  },
-  metadataItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  metadataCount: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  preview: {
-    fontSize: 13,
-    marginTop: 8,
-    lineHeight: 18,
-  },
   emptyState: {
     flex: 1,
     alignItems: "center",
@@ -1212,24 +867,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 8,
     lineHeight: 20,
-  },
-  deleteAction: {
-    justifyContent: "center",
-    alignItems: "flex-end",
-    marginBottom: 12,
-  },
-  deleteButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 80,
-    height: "100%",
-    borderRadius: 16,
-    gap: 4,
-  },
-  deleteText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "600",
   },
   tagFilterRow: {
     paddingBottom: 8,
@@ -1250,25 +887,6 @@ const styles = StyleSheet.create({
   tagFilterText: {
     fontSize: 13,
     fontWeight: "500",
-  },
-  tagsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginTop: 8,
-  },
-  tagChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  tagChipText: {
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  moreTagsText: {
-    fontSize: 11,
-    alignSelf: "center",
   },
   batchActionBar: {
     position: "absolute",

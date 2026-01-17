@@ -15,6 +15,8 @@ import type { RecordingDraft } from "@/packages/types/recording";
 
 import { ScreenContainer } from "@/packages/components/screen-container";
 import { IconSymbol } from "@/packages/components/ui/icon-symbol";
+import { Button } from "@/packages/components/ui/button";
+import { Badge } from "@/packages/components/ui/badge";
 import { useColors } from "@/packages/hooks/use-colors";
 import { useResponsive } from "@/packages/hooks/use-responsive";
 import { useRecordingSession } from "@/packages/lib/recording-session-context";
@@ -160,13 +162,14 @@ export default function RecordScreen() {
             <Text style={[styles.modalNote, { color: colors.muted }]}>
               音声データは復元できませんが、録音情報は保存されています。
             </Text>
-            <TouchableOpacity
-              style={[styles.modalButton, { backgroundColor: colors.primary }]}
+            <Button
               onPress={handleRecoveryDismiss}
-              activeOpacity={0.8}
+              variant="primary"
+              size="lg"
+              fullWidth
             >
-              <Text style={styles.modalButtonText}>確認して閉じる</Text>
-            </TouchableOpacity>
+              確認して閉じる
+            </Button>
           </View>
         </View>
       </Modal>
@@ -275,9 +278,9 @@ export default function RecordScreen() {
                   {t("record.realtimeTranscription")}
                 </Text>
                 {translationEnabled && isTranslating && (
-                  <Text style={[styles.translatingBadge, { color: colors.primary, backgroundColor: colors.primary + "20" }]}>
+                  <Badge variant="primary" size="sm">
                     {t("record.translating")}
-                  </Text>
+                  </Badge>
                 )}
               </View>
               <View style={styles.realtimeStatus}>
@@ -407,7 +410,7 @@ export default function RecordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingBottom: 72,
   },
   containerDesktop: {
@@ -465,7 +468,7 @@ const styles = StyleSheet.create({
   },
   audioSourceSelector: {
     flexDirection: "row",
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     padding: 4,
   },
@@ -498,7 +501,7 @@ const styles = StyleSheet.create({
   },
   waveform: {
     height: 120,
-    borderRadius: 16,
+    borderRadius: 8,
     padding: 16,
     justifyContent: "center",
   },
@@ -536,9 +539,9 @@ const styles = StyleSheet.create({
   },
   realtimeSection: {
     marginTop: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
-    padding: 12,
+    padding: 16,
     flex: 1,
   },
   realtimeHeader: {
@@ -609,14 +612,6 @@ const styles = StyleSheet.create({
   translationError: {
     fontSize: 12,
   },
-  translatingBadge: {
-    fontSize: 10,
-    fontWeight: "500",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginLeft: 8,
-  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -625,11 +620,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 24,
     alignItems: "center",
     maxWidth: 320,
     width: "100%",
+    gap: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -653,18 +649,5 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: "center",
     fontStyle: "italic",
-  },
-  modalButton: {
-    marginTop: 20,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    minWidth: 160,
-  },
-  modalButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-    textAlign: "center",
   },
 });
